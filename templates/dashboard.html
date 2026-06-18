@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Dashboard</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Welcome back, <span class="text-portal-primary font-bold">{{ user.get_full_name|default:user.username }}</span></p>
+    </div>
+    <div class="self-start md:self-auto text-xs font-semibold text-portal-textMuted py-2 px-4 rounded-full bg-portal-card border border-portal-border flex items-center gap-1.5">
+        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+        {% now "M d, Y" %}
+    </div>
+</div>
+
+{% if user.is_student %}
+<!-- STUDENT DASHBOARD -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Attendance Widget -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Attendance Rate</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ attendance_pct }}%</div>
+            <div class="text-xs text-portal-textMuted mt-1">
+                Attended {{ present_classes }} of {{ total_classes }} classes
+            </div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary">
+            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+        </div>
+    </div>
+
+    <!-- Active Department/Sem -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Department</div>
+            <div class="text-xl font-bold text-white tracking-tight">{{ student.department.code }}</div>
+            <div class="text-xs text-portal-textMuted mt-2">
+                Semester {{ student.semester }}
+            </div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-secondary/5 border border-portal-secondary/20 flex items-center justify-center text-portal-secondary">
+            <i data-lucide="award" class="w-5 h-5"></i>
+        </div>
+    </div>
+
+    <!-- Pending Assignments -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Pending Assignments</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ upcoming_assignments.count }}</div>
+            <div class="text-xs text-portal-textMuted mt-1">
+                Requires submission
+            </div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-success/5 border border-portal-success/20 flex items-center justify-center text-portal-success">
+            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Upcoming Assignments List -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+        <div class="flex justify-between items-center mb-6 border-b border-portal-border/60 pb-4">
+            <h3 class="text-white font-bold flex items-center gap-2">
+                <i data-lucide="file-text" class="text-portal-primary w-5 h-5"></i> Assignments
+            </h3>
+            <a href="{% url 'student_assignments' %}" class="border border-portal-border hover:border-portal-primary hover:text-white text-portal-textMuted font-bold text-xs py-1.5 px-3 rounded-lg transition-all">View All</a>
+        </div>
+        {% if upcoming_assignments %}
+            <div class="space-y-3">
+                {% for assignment in upcoming_assignments %}
+                <div class="flex justify-between items-center p-4 bg-black/10 border border-portal-border/60 rounded-lg">
+                    <div>
+                        <div class="font-semibold text-white text-sm">{{ assignment.title }}</div>
+                        <div class="text-xs text-portal-textMuted mt-0.5">
+                            Subject: {{ assignment.subject.name }} | Due: {{ assignment.deadline|date:"M d, g:i A" }}
+                        </div>
+                    </div>
+                    {% if assignment.submitted %}
+                        <span class="badge badge-success">Submitted</span>
+                    {% else %}
+                        <a href="{% url 'student_assignments' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg transition-all">Submit</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No upcoming assignments! 🎉</p>
+        {% endif %}
+    </div>
+
+    <!-- Notice Board -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+        <div class="flex justify-between items-center mb-6 border-b border-portal-border/60 pb-4">
+            <h3 class="text-white font-bold flex items-center gap-2">
+                <i data-lucide="megaphone" class="text-portal-primary w-5 h-5"></i> Notice Board
+            </h3>
+            {% if user.is_admin %}
+                <a href="{% url 'create_notice' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg transition-all">Add Notice</a>
+            {% endif %}
+        </div>
+        {% if notices %}
+            <div class="space-y-4">
+                {% for notice in notices %}
+                <div class="p-4 rounded-lg bg-black/10 border border-portal-border/60 hover:border-slate-800 transition-all border-l-2 border-l-portal-primary">
+                    <div class="font-bold text-white text-sm">{{ notice.title }}</div>
+                    <div class="text-xs text-portal-textMuted mt-1 leading-relaxed">{{ notice.description }}</div>
+                    <div class="text-[10px] text-portal-textMuted mt-3 font-semibold">Posted by {{ notice.created_by.get_full_name|default:notice.created_by.username }} on {{ notice.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No notices available.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% elif user.is_teacher %}
+<!-- TEACHER DASHBOARD -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Classes/Subjects -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Assigned Subjects</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ subjects.count }}</div>
+            <div class="text-xs text-portal-textMuted mt-1">
+                Taught in current semester
+            </div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+        </div>
+    </div>
+
+    <!-- Assignments Uploaded -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Assignments Created</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_assignments }}</div>
+            <div class="text-xs text-portal-textMuted mt-1">
+                For student submission
+            </div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-secondary/5 border border-portal-secondary/20 flex items-center justify-center text-portal-secondary">
+            <i data-lucide="file-signature" class="w-5 h-5"></i>
+        </div>
+    </div>
+
+    <!-- Submissions Pending Grading -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Pending Grading</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ pending_grading }}</div>
+            <div class="text-xs text-portal-textMuted mt-1">
+                Requires evaluation
+            </div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-success/5 border border-portal-success/20 flex items-center justify-center text-portal-success">
+            <i data-lucide="check-square" class="w-5 h-5"></i>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Teacher Assigned Classes -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+        <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+            <i data-lucide="folder" class="text-portal-primary w-5 h-5"></i> My Subjects
+        </h3>
+        {% if subjects %}
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3">Code</th>
+                            <th class="pb-3">Name</th>
+                            <th class="pb-3">Semester</th>
+                            <th class="pb-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 text-sm">
+                        {% for subject in subjects %}
+                        <tr class="hover:bg-white/5 transition-all">
+                            <td class="py-3 font-semibold text-white">{{ subject.code }}</td>
+                            <td class="py-3">{{ subject.name }}</td>
+                            <td class="py-3">Semester {{ subject.semester }}</td>
+                            <td class="py-3 text-right">
+                                <a href="{% url 'mark_attendance' subject.id %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg inline-flex items-center gap-1 transition-all">
+                                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Attendance
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No subjects assigned to you yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Notices Board -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+        <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+            <i data-lucide="megaphone" class="text-portal-primary w-5 h-5"></i> Notice Board
+        </h3>
+        {% if notices %}
+            <div class="space-y-4">
+                {% for notice in notices %}
+                <div class="p-4 rounded-lg bg-black/10 border border-portal-border/60 hover:border-slate-800 transition-all border-l-2 border-l-portal-primary">
+                    <div class="font-bold text-white text-sm">{{ notice.title }}</div>
+                    <div class="text-xs text-portal-textMuted mt-1 leading-relaxed">{{ notice.description }}</div>
+                    <div class="text-[10px] text-portal-textMuted mt-3 font-semibold">Posted by {{ notice.created_by.get_full_name|default:notice.created_by.username }} on {{ notice.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No notices available.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% else %}
+<!-- ADMIN/STAFF DASHBOARD -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Total Students</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_students }}</div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary">
+            <i data-lucide="users" class="w-5 h-5"></i>
+        </div>
+    </div>
+    
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Total Teachers</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_teachers }}</div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-secondary/5 border border-portal-secondary/20 flex items-center justify-center text-portal-secondary">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
+        </div>
+    </div>
+
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+        <div>
+            <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Departments</div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_departments }}</div>
+        </div>
+        <div class="w-11 h-11 rounded-lg bg-portal-success/5 border border-portal-success/20 flex items-center justify-center text-portal-success">
+            <i data-lucide="building" class="w-5 h-5"></i>
+        </div>
+    </div>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg mb-8">
+    <div class="flex justify-between items-center mb-6 border-b border-portal-border/60 pb-4">
+        <h3 class="text-white font-bold flex items-center gap-2">
+            <i data-lucide="megaphone" class="text-portal-primary w-5 h-5"></i> Notices
+        </h3>
+        <a href="{% url 'create_notice' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg transition-all">Add Notice</a>
+    </div>
+    {% if notices %}
+        <div class="space-y-4">
+            {% for notice in notices %}
+            <div class="p-4 rounded-lg bg-black/10 border border-portal-border/60 hover:border-slate-800 transition-all border-l-2 border-l-portal-primary">
+                <div class="font-bold text-white text-sm">{{ notice.title }}</div>
+                <div class="text-xs text-portal-textMuted mt-1 leading-relaxed">{{ notice.description }}</div>
+                <div class="text-[10px] text-portal-textMuted mt-3 font-semibold">Posted by {{ notice.created_by.get_full_name|default:notice.created_by.username }} on {{ notice.created_at|date:"M d, Y" }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-portal-textMuted text-sm text-center py-8">No notices available.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Quick Actions Panel -->
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+    <h3 class="text-white font-bold mb-6">Quick Tools</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <a href="{% url 'chatbot' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
+            <i data-lucide="message-square-code" class="w-7 h-7 text-portal-primary group-hover:scale-110 transition-all"></i>
+            <span class="text-xs font-bold text-white">AI Assistant</span>
+        </a>
+        <a href="{% url 'notes_list' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
+            <i data-lucide="book-open" class="w-7 h-7 text-portal-secondary group-hover:scale-110 transition-all"></i>
+            <span class="text-xs font-bold text-white">Notes Library</span>
+        </a>
+        {% if user.is_student %}
+        <a href="{% url 'timetable_view' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
+            <i data-lucide="calendar" class="w-7 h-7 text-portal-success group-hover:scale-110 transition-all"></i>
+            <span class="text-xs font-bold text-white">Timetable</span>
+        </a>
+        <a href="{% url 'student_attendance' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
+            <i data-lucide="calendar-days" class="w-7 h-7 text-portal-warning group-hover:scale-110 transition-all"></i>
+            <span class="text-xs font-bold text-white">Scan Attendance</span>
+        </a>
+        {% endif %}
+        {% if user.is_teacher %}
+        <a href="{% url 'teacher_attendance_dashboard' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
+            <i data-lucide="qr-code" class="w-7 h-7 text-portal-warning group-hover:scale-110 transition-all"></i>
+            <span class="text-xs font-bold text-white">QR Attendance</span>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

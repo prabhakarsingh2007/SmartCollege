@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Weekly Timetable - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Weekly Timetable</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Class schedules grouped by weekday</p>
+    </div>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 md:p-8 shadow-2xl">
+    <div class="space-y-10">
+        {% for day, entries in grouped_timetable.items %}
+        <div>
+            <h3 class="text-portal-primary border-b border-portal-border/60 pb-2 mb-4 font-bold text-base md:text-lg flex items-center gap-2">
+                <i data-lucide="calendar" class="w-4 h-4"></i> {{ day }}
+            </h3>
+            
+            {% if entries %}
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3" style="width: 25%;">Time</th>
+                            <th class="pb-3" style="width: 45%;">Subject</th>
+                            <th class="pb-3" style="width: 15%;">Room</th>
+                            {% if not user.is_student %}
+                            <th class="pb-3 text-right" style="width: 15%;">Teacher</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 text-sm">
+                        {% for entry in entries %}
+                        <tr class="hover:bg-white/5 transition-all">
+                            <td class="py-3 font-semibold text-white">
+                                {{ entry.start_time|time:"g:i A" }} - {{ entry.end_time|time:"g:i A" }}
+                            </td>
+                            <td class="py-3">
+                                <div class="flex items-center gap-2.5">
+                                    <strong class="text-white font-semibold">{{ entry.subject.name }}</strong>
+                                    <span class="text-[10px] text-portal-textMuted font-bold bg-white/5 border border-portal-border px-2 py-0.5 rounded">
+                                        {{ entry.subject.code }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="py-3">
+                                <span class="badge badge-success">{{ entry.room_no }}</span>
+                            </td>
+                            {% if not user.is_student %}
+                            <td class="py-3 text-right text-portal-textMuted text-xs">
+                                {{ entry.subject.teacher.user.get_full_name|default:entry.subject.teacher.user.username }}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-portal-textMuted text-xs italic pl-4">No classes scheduled for this day.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

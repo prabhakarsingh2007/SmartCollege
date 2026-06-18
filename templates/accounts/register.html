@@ -1,0 +1,118 @@
+{% extends 'public_base.html' %}
+{% block title %}Register - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-6 md:py-12 px-4 relative overflow-hidden">
+    <!-- Glowing background details -->
+    <div class="absolute -top-20 -right-20 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-[460px] bg-portal-card border border-portal-border rounded-xl p-8 md:p-10 shadow-2xl relative z-10 transition-all hover:border-slate-800">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <a href="{% url 'home' %}" class="inline-flex items-center gap-2 text-2xl font-extrabold text-white tracking-tight mb-2">
+                <i data-lucide="graduation-cap" class="text-portal-primary w-8 h-8"></i>
+                <span>Smart<span class="text-portal-primary">College</span></span>
+            </a>
+            <h2 class="text-xl font-bold text-white mt-4">Create Account</h2>
+            <p class="text-portal-textMuted text-xs mt-1">Register a new student or teacher profile</p>
+        </div>
+
+        <!-- Form Errors -->
+        {% if form.errors %}
+        <div class="mb-5 p-4 rounded-lg bg-red-950/20 border border-red-900/40 text-red-400 text-xs">
+            <div class="font-bold mb-1">Please correct the following errors:</div>
+            <ul class="list-disc list-inside space-y-0.5">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'register' %}" class="space-y-5">
+            {% csrf_token %}
+            
+            <div>
+                <label for="username" class="block text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-2">Username</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                    </div>
+                    <input type="text" name="username" id="username" required
+                           value="{{ form.username.value|default:'' }}"
+                           class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full pl-10 pr-4 py-2.5 focus:outline-none transition-all"
+                           placeholder="Enter your username">
+                </div>
+            </div>
+
+            <div>
+                <label for="email" class="block text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-2">Email Address</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                    </div>
+                    <input type="email" name="email" id="email" required
+                           value="{{ form.email.value|default:'' }}"
+                           class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full pl-10 pr-4 py-2.5 focus:outline-none transition-all"
+                           placeholder="name@college.edu">
+                </div>
+            </div>
+
+            <div>
+                <label for="role" class="block text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-2">Portal Role</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                    </div>
+                    <select name="role" id="role" required
+                            class="bg-black/25 border border-portal-border text-white text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full pl-10 pr-4 py-2.5 focus:outline-none transition-all appearance-none cursor-pointer">
+                        <option value="student" {% if form.role.value == 'student' %}selected{% endif %}>Student (Dashboard, QR Scan, Notes)</option>
+                        <option value="teacher" {% if form.role.value == 'teacher' %}selected{% endif %}>Teacher (Mark Attendance, Uploads)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="password1" class="block text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-2">Password</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="lock" class="w-4 h-4"></i>
+                    </div>
+                    <input type="password" name="password1" id="password1" required
+                           class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full pl-10 pr-4 py-2.5 focus:outline-none transition-all"
+                           placeholder="Create password">
+                </div>
+            </div>
+
+            <div>
+                <label for="password2" class="block text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-2">Confirm Password</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    </div>
+                    <input type="password" name="password2" id="password2" required
+                           class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full pl-10 pr-4 py-2.5 focus:outline-none transition-all"
+                           placeholder="Repeat password">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 active:scale-[0.99] mt-2">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Create Account
+            </button>
+        </form>
+
+        <div class="text-center mt-8 pt-6 border-t border-portal-border/60">
+            <p class="text-sm text-portal-textMuted">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="text-portal-primary hover:text-portal-primaryHover font-semibold transition-all ml-1">Sign In Here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

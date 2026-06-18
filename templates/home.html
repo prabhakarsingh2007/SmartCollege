@@ -1,0 +1,56 @@
+{% extends 'public_base.html' %}
+{% block title %}Smart College Assistant - Integrated Campus Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="text-center py-16 md:py-24 px-6 bg-gradient-to-b from-portal-primary/5 to-transparent border border-portal-border rounded-xl mb-12 relative overflow-hidden">
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-portal-primary/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-portal-secondary/5 rounded-full blur-3xl"></div>
+
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6 relative z-10 max-w-3xl mx-auto">
+        Empower Your Campus with <span class="text-portal-primary">AI Productivity</span>
+    </h1>
+    <p class="text-portal-textMuted text-base md:text-lg max-w-2xl mx-auto mb-10 relative z-10">
+        A unified, premium digital assistant designed to streamline academic scheduling, attendance tracking, assignments, and notes sharing for students and teachers alike.
+    </p>
+    <div class="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+        {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Go to Portal
+        </a>
+        {% else %}
+        <a href="{% url 'register' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Join as Student/Teacher
+        </a>
+        <a href="{% url 'login' %}" class="border border-portal-border hover:border-portal-primary hover:text-white text-slate-200 font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99]">
+            <i data-lucide="log-in" class="w-4 h-4"></i> Access Portal
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<h2 class="text-center text-white text-2xl font-bold mb-10 tracking-tight">
+    Modern Core Features
+</h2>
+
+<!-- Feature Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 hover:border-slate-800 transition-all">
+        <i data-lucide="qr-code" class="text-portal-primary w-8 h-8 mb-4"></i>
+        <h3 class="text-white text-lg font-bold mb-3">QR & Manual Attendance</h3>
+        <p class="text-portal-textMuted text-sm leading-relaxed">Teachers can generate secure, dynamic session QR codes. Students check in by scanning the code or submitting tokens, generating instantly updated percentage summaries.</p>
+    </div>
+    
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 hover:border-slate-800 transition-all">
+        <i data-lucide="message-square-code" class="text-portal-primary w-8 h-8 mb-4"></i>
+        <h3 class="text-white text-lg font-bold mb-3">AI Academic Assistant</h3>
+        <p class="text-portal-textMuted text-sm leading-relaxed">Integrates Gemini API to answer course-related queries, resolve homework deadlines, explain complex definitions, and provide study recommendations based on active profile context.</p>
+    </div>
+    
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 hover:border-slate-800 transition-all">
+        <i data-lucide="file-signature" class="text-portal-primary w-8 h-8 mb-4"></i>
+        <h3 class="text-white text-lg font-bold mb-3">Bespoke Academic Tools</h3>
+        <p class="text-portal-textMuted text-sm leading-relaxed">Clean interfaces for uploading notes, managing notices, downloading course materials, logging assignment submissions, and grading solution sheets.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Complete Profile - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-portal-bg px-4 py-8 relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-[500px] bg-portal-card border border-portal-border rounded-xl p-8 shadow-2xl relative z-10">
+        <div class="text-center mb-8">
+            <h1 class="inline-flex items-center gap-2 text-2xl font-extrabold text-white tracking-tight mb-2">
+                <i data-lucide="user-cog" class="text-portal-primary w-8 h-8"></i> Setup Profile
+            </h1>
+            <h2 class="text-lg font-bold text-white mt-2">Complete {{ role_title }} Profile</h2>
+            <p class="text-portal-textMuted text-xs mt-1">Please fill in additional academic information to continue</p>
+        </div>
+        
+        {% if not departments_exist %}
+        <div class="bg-amber-500/10 border border-portal-warning text-portal-warning rounded-lg p-4 mb-6 text-xs leading-relaxed flex gap-2.5 items-start">
+            <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+            <div>
+                <strong>Warning:</strong> No Departments exist in the system. An admin must create a Department in the <a href="/admin/" target="_blank" class="underline text-white font-bold">Admin Panel</a> before you can complete your profile.
+            </div>
+        </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'complete_profile' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <span class="badge badge-danger mt-1 normal-case">{{ field.errors.as_text }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99] mt-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100" 
+                    {% if not departments_exist %}disabled{% endif %}>
+                <i data-lucide="check-circle" class="w-4 h-4"></i> Save Profile
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

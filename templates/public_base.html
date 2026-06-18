@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart College Assistant{% endblock %}</title>
+    <!-- Tailwind CSS v3 Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        portal: {
+                            bg: '#0a0c10',
+                            card: '#141923',
+                            border: '#1f2735',
+                            primary: '#c5a880',
+                            primaryHover: '#b3966e',
+                            secondary: '#4a6c8d',
+                            secondaryHover: '#3b5875',
+                            textMuted: '#828a9b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-portal-bg text-slate-200 min-h-screen font-sans">
+
+    <!-- Public Header -->
+    <header class="flex justify-between items-center h-[75px] px-6 md:px-16 bg-portal-card border-b border-portal-border sticky top-0 z-50 transition-all">
+        <a href="{% url 'home' %}" class="flex items-center gap-2 text-xl font-extrabold text-white tracking-tight">
+            <i data-lucide="graduation-cap" class="text-portal-primary w-6 h-6"></i>
+            <span>Smart<span class="text-portal-primary">College</span></span>
+        </a>
+        <nav class="hidden md:block">
+            <ul class="flex items-center gap-10 list-none text-sm font-semibold">
+                <li class="{% if request.resolver_match.url_name == 'home' %}text-portal-primary{% else %}text-portal-textMuted hover:text-white{% endif %} transition-all">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'services' %}text-portal-primary{% else %}text-portal-textMuted hover:text-white{% endif %} transition-all">
+                    <a href="{% url 'services' %}">Services</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'about' %}text-portal-primary{% else %}text-portal-textMuted hover:text-white{% endif %} transition-all">
+                    <a href="{% url 'about' %}">About</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'contact' %}text-portal-primary{% else %}text-portal-textMuted hover:text-white{% endif %} transition-all">
+                    <a href="{% url 'contact' %}">Contact</a>
+                </li>
+            </ul>
+        </nav>
+        <div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Portal
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+                <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Login
+            </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Public Mobile Menu Bar (Bottom styled or simple inline) -->
+    <div class="md:hidden flex justify-around items-center bg-portal-card border-b border-portal-border py-2 text-[11px] font-bold text-portal-textMuted">
+        <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}text-portal-primary{% endif %}">Home</a>
+        <a href="{% url 'services' %}" class="{% if request.resolver_match.url_name == 'services' %}text-portal-primary{% endif %}">Services</a>
+        <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}text-portal-primary{% endif %}">About</a>
+        <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}text-portal-primary{% endif %}">Contact</a>
+    </div>
+
+    <!-- Public Content -->
+    <main class="max-w-[1200px] mx-auto px-6 py-12 md:py-16">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Public Footer -->
+    <footer class="bg-portal-card border-t border-portal-border pt-16 pb-12 px-6 md:px-16 text-sm">
+        <div class="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            <!-- Brand & Info -->
+            <div class="flex flex-col gap-4">
+                <a href="{% url 'home' %}" class="text-white text-xl font-extrabold flex items-center gap-2">
+                    <i data-lucide="graduation-cap" class="text-portal-primary w-6 h-6"></i>
+                    <span>Smart<span class="text-portal-primary">College</span></span>
+                </a>
+                <p class="text-portal-textMuted text-xs leading-relaxed">
+                    A centralized campus coordination platform empowering students and professors with dynamic calendars, secure QR attendance checking, study libraries, and AI-driven assistant tools.
+                </p>
+                <div class="flex gap-3 mt-2">
+                    <a href="#" class="w-8 h-8 rounded-lg bg-black/30 border border-portal-border flex items-center justify-center text-portal-textMuted hover:text-white hover:border-portal-primary transition-all">
+                        <i data-lucide="github" class="w-4 h-4"></i>
+                    </a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-black/30 border border-portal-border flex items-center justify-center text-portal-textMuted hover:text-white hover:border-portal-primary transition-all">
+                        <i data-lucide="twitter" class="w-4 h-4"></i>
+                    </a>
+                    <a href="#" class="w-8 h-8 rounded-lg bg-black/30 border border-portal-border flex items-center justify-center text-portal-textMuted hover:text-white hover:border-portal-primary transition-all">
+                        <i data-lucide="linkedin" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="flex flex-col gap-4">
+                <h4 class="text-white font-bold uppercase text-xs tracking-wider border-b border-portal-border/60 pb-2">Quick Navigation</h4>
+                <ul class="space-y-2.5 font-medium text-portal-textMuted">
+                    <li><a href="{% url 'home' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Home</a></li>
+                    <li><a href="{% url 'services' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Services</a></li>
+                    <li><a href="{% url 'about' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> About SCA</a></li>
+                    <li><a href="{% url 'contact' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Contact Support</a></li>
+                </ul>
+            </div>
+            
+            <!-- Academic Portal -->
+            <div class="flex flex-col gap-4">
+                <h4 class="text-white font-bold uppercase text-xs tracking-wider border-b border-portal-border/60 pb-2">Academic Portal</h4>
+                <ul class="space-y-2.5 font-medium text-portal-textMuted">
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'dashboard' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Unified Dashboard</a></li>
+                    <li><a href="{% url 'profile_view' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Edit My Profile</a></li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Student Sign In</a></li>
+                    <li><a href="{% url 'login' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Instructor Sign In</a></li>
+                    <li><a href="{% url 'register' %}" class="hover:text-white transition-all inline-flex items-center gap-1.5"><i data-lucide="chevron-right" class="w-3 h-3"></i> Create New Account</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Gemini Support Widget -->
+            <div class="flex flex-col gap-4">
+                <h4 class="text-white font-bold uppercase text-xs tracking-wider border-b border-portal-border/60 pb-2">Gemini AI Assistant</h4>
+                <div class="bg-black/30 border border-portal-border p-4 rounded-xl flex flex-col gap-2.5 relative overflow-hidden group hover:border-portal-primary/30 transition-all">
+                    <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-portal-primary/5 rounded-full blur-xl group-hover:bg-portal-primary/10 transition-all"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-white uppercase tracking-wider">Online & Responsive</span>
+                    </div>
+                    <p class="text-[11px] text-portal-textMuted leading-relaxed">
+                        Ask our intelligent Gemini model questions about your homework deadlines, attendance levels, and daily calendars instantly.
+                    </p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'chatbot' %}" class="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-slate-950 bg-portal-primary hover:bg-portal-primaryHover px-3 py-1.5 rounded-lg mt-1 transition-all">
+                        <i data-lucide="message-square-code" class="w-3 h-3"></i> Chat with AI
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-slate-950 bg-portal-primary hover:bg-portal-primaryHover px-3 py-1.5 rounded-lg mt-1 transition-all">
+                        <i data-lucide="log-in" class="w-3 h-3"></i> Access AI
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Divider & Copyright -->
+        <div class="max-w-[1200px] mx-auto border-t border-portal-border/60 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-portal-textMuted">
+            <div>
+                &copy; {% now "Y" %} Smart College Assistant. All rights reserved.
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="hover:text-white transition-all">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition-all">Terms of Service</a>
+                <a href="#" class="hover:text-white transition-all">Campus SLA</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

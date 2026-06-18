@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Mark Attendance - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Log Attendance Manually</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Subject: <span class="text-portal-primary font-bold">{{ subject.name }} ({{ subject.code }})</span></p>
+    </div>
+    <a href="{% url 'teacher_attendance_dashboard' %}" class="border border-portal-border hover:border-portal-primary hover:text-white text-portal-textMuted font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-1.5 transition-all self-start md:self-auto">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 md:p-8 shadow-2xl max-w-3xl mx-auto">
+    <form method="get" id="date-form" class="mb-8 flex flex-col sm:flex-row sm:items-end gap-4">
+        <div class="flex-grow">
+            <label for="date-select" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Select Class Date</label>
+            <input type="date" name="date" id="date-select" class="w-full px-4 py-2.5 bg-black/25 border border-portal-border rounded-lg text-white text-sm outline-none transition-all focus:border-portal-primary focus:ring-1 focus:ring-portal-primary" value="{{ selected_date }}" onchange="document.getElementById('date-form').submit();">
+        </div>
+    </form>
+
+    <form method="post" action="{% url 'mark_attendance' subject.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        
+        <h3 class="text-white text-lg font-bold pb-4 border-b border-portal-border/60 mb-6">
+            Students Roll Check
+        </h3>
+        
+        {% if students %}
+        <div class="overflow-x-auto w-full mb-8">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                        <th class="pb-3 pr-4">Roll Number</th>
+                        <th class="pb-3 pr-4">Student Name</th>
+                        <th class="pb-3 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-sm">
+                    {% for student in students %}
+                    <tr class="hover:bg-white/5 transition-all">
+                        <td class="py-4 pr-4 font-semibold text-white">{{ student.roll_no }}</td>
+                        <td class="py-4 pr-4">{{ student.user.get_full_name|default:student.user.username }}</td>
+                        <td class="py-4 text-center">
+                            <div class="inline-flex gap-6 items-center">
+                                <label class="cursor-pointer inline-flex items-center gap-2 select-none group">
+                                    <input type="radio" name="student_{{ student.id }}" value="Present" 
+                                           {% if not marked_student_ids or marked_student_ids.student.id == 'Present' %}checked{% endif %}
+                                           class="w-4 h-4 text-portal-success bg-black/25 border-portal-border focus:ring-portal-success accent-portal-success cursor-pointer">
+                                    <span class="text-sm font-semibold text-emerald-500 hover:text-emerald-400">Present</span>
+                                </label>
+                                <label class="cursor-pointer inline-flex items-center gap-2 select-none group">
+                                    <input type="radio" name="student_{{ student.id }}" value="Absent"
+                                           class="w-4 h-4 text-portal-danger bg-black/25 border-portal-border focus:ring-portal-danger accent-portal-danger cursor-pointer">
+                                    <span class="text-sm font-semibold text-red-400 hover:text-red-300">Absent</span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+            <i data-lucide="save" class="w-4 h-4"></i> Save Attendance Logs
+        </button>
+        {% else %}
+        <p class="text-portal-textMuted text-sm text-center py-8">
+            No students found enrolled in {{ subject.department.name }} Semester {{ subject.semester }}.
+        </p>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Dynamic helper for radio status setting -->
+{{ marked_student_ids|json_script:"marked-data" }}
+<script>
+    // Set custom check state from django context keys
+    const marked = JSON.parse(document.getElementById('marked-data').textContent);
+    
+    Object.keys(marked).forEach(studentId => {
+        const status = marked[studentId];
+        const radio = document.querySelector(`input[name="student_${studentId}"][value="${status}"]`);
+        if (radio) {
+            radio.checked = true;
+        }
+    });
+</script>
+{% endblock %}

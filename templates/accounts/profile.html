@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="mb-10">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">My Profile</h1>
+    <p class="text-portal-textMuted text-sm mt-1">View and manage your academic profile details</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Profile Card (Overview) -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
+        {% if user.is_student and profile.profile_image %}
+            <img src="{{ profile.profile_image.url }}" alt="Profile Picture" class="w-32 h-32 rounded-full border-2 border-portal-primary object-cover">
+        {% else %}
+            <div class="w-32 h-32 rounded-full border border-dashed border-portal-border flex items-center justify-center bg-black/10 text-portal-textMuted">
+                <i data-lucide="user" class="w-12 h-12"></i>
+            </div>
+        {% endif %}
+        
+        <div>
+            <h2 class="text-white text-xl font-bold tracking-tight">{{ user.get_full_name|default:user.username }}</h2>
+            <span class="inline-block mt-1 text-[11px] font-bold text-portal-primary bg-portal-primary/10 border border-portal-primary/20 px-3 py-1 rounded-full uppercase tracking-wider">
+                {{ user.get_role_display }}
+            </span>
+        </div>
+        
+        <div class="w-full border-t border-portal-border pt-6 flex flex-col gap-4 text-left text-sm">
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Email:</span>
+                <span class="text-white font-medium">{{ user.email }}</span>
+            </div>
+            {% if user.is_student %}
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Roll Number:</span>
+                <span class="text-white font-medium">{{ profile.roll_no }}</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Registration No:</span>
+                <span class="text-white font-medium">{{ profile.registration_no }}</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Department:</span>
+                <span class="text-white font-medium">{{ profile.department.name }}</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Semester:</span>
+                <span class="text-white font-medium">Semester {{ profile.semester }}</span>
+            </div>
+            {% elif user.is_teacher %}
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Employee ID:</span>
+                <span class="text-white font-medium">{{ profile.employee_id }}</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Department:</span>
+                <span class="text-white font-medium">{{ profile.department.name }}</span>
+            </div>
+            <div class="flex justify-between border-b border-white/5 pb-2">
+                <span class="text-portal-textMuted">Designation:</span>
+                <span class="text-white font-medium">{{ profile.designation }}</span>
+            </div>
+            {% endif %}
+            <div class="flex justify-between pb-2">
+                <span class="text-portal-textMuted">Phone Number:</span>
+                <span class="text-white font-medium">{{ profile.phone }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Card -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 shadow-2xl">
+        <h3 class="text-white text-lg font-bold mb-6">Edit Profile Details</h3>
+        
+        <form method="post" action="{% url 'profile_view' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <span class="badge badge-danger mt-1 normal-case">{{ field.errors.as_text }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99] mt-2">
+                <i data-lucide="save" class="w-4 h-4"></i> Update Profile
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

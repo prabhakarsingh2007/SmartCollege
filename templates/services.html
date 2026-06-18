@@ -1,0 +1,55 @@
+{% extends 'public_base.html' %}
+{% block title %}Our Services - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="text-center mb-16 flex flex-col gap-2">
+    <h1 class="text-3xl font-extrabold text-white tracking-tight">
+        Core Integrated Services
+    </h1>
+    <p class="text-portal-textMuted max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+        Everything you need to succeed academically, organized inside a single refined, human-designed portal.
+    </p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex gap-5 items-start hover:border-slate-800 transition-all">
+        <div class="w-12 h-12 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary text-xl flex-shrink-0">
+            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <h3 class="text-white text-lg font-bold mb-2">QR Attendance System</h3>
+            <p class="text-portal-textMuted text-sm leading-relaxed">Allows instant, secure student check-ins. Teachers display a dynamic QR code on the screen, which deactivates after 5 minutes, ensuring high accuracy and speed.</p>
+        </div>
+    </div>
+
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex gap-5 items-start hover:border-slate-800 transition-all">
+        <div class="w-12 h-12 rounded-lg bg-portal-secondary/5 border border-portal-secondary/20 flex items-center justify-center text-portal-secondary text-xl flex-shrink-0">
+            <i data-lucide="message-square" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <h3 class="text-white text-lg font-bold mb-2">Context-Aware AI Tutor</h3>
+            <p class="text-portal-textMuted text-sm leading-relaxed">Interact with an integrated Gemini chatbot that reads your schedule, attendance, and assignment metrics to help explain hard concepts or notify you of upcoming deadlines.</p>
+        </div>
+    </div>
+
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex gap-5 items-start hover:border-slate-800 transition-all">
+        <div class="w-12 h-12 rounded-lg bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl flex-shrink-0">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <h3 class="text-white text-lg font-bold mb-2">Assignments Portal</h3>
+            <p class="text-portal-textMuted text-sm leading-relaxed">Upload solutions directly through the portal. Teachers receive submissions, download reference sheets, record score ratings, and submit direct feedback notes.</p>
+        </div>
+    </div>
+
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex gap-5 items-start hover:border-slate-800 transition-all">
+        <div class="w-12 h-12 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary text-xl flex-shrink-0">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <h3 class="text-white text-lg font-bold mb-2">Study Materials Exchange</h3>
+            <p class="text-portal-textMuted text-sm leading-relaxed">Access subject-specific course notes, slides, and lecture materials. Teachers can upload notes instantly, making them downloadable for enrolled classes.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

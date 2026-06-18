@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Manage Attendance - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Manage Attendance</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Choose a class to log attendance manually or generate dynamic session QR codes</p>
+    </div>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 md:p-8 shadow-2xl">
+    <h3 class="text-white text-lg font-bold mb-6 flex items-center gap-2">
+        <i data-lucide="users" class="text-portal-primary w-5 h-5"></i> My Classes
+    </h3>
+    
+    {% if subjects %}
+    <div class="overflow-x-auto w-full">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                    <th class="pb-3 pr-4">Subject Code</th>
+                    <th class="pb-3 pr-4">Name</th>
+                    <th class="pb-3 pr-4">Semester</th>
+                    <th class="pb-3 pr-4">Log Manually</th>
+                    <th class="pb-3 text-right">QR Session</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm">
+                {% for subject in subjects %}
+                <tr class="hover:bg-white/5 transition-all">
+                    <td class="py-4 pr-4 font-semibold text-white">{{ subject.code }}</td>
+                    <td class="py-4 pr-4">{{ subject.name }}</td>
+                    <td class="py-4 pr-4 text-portal-textMuted">Semester {{ subject.semester }}</td>
+                    <td class="py-4 pr-4">
+                        <a href="{% url 'mark_attendance' subject.id %}" class="border border-portal-border hover:border-portal-primary hover:text-white text-portal-textMuted font-bold text-xs py-2 px-3.5 rounded-lg inline-flex items-center gap-1.5 transition-all">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Log Attendance
+                        </a>
+                    </td>
+                    <td class="py-4 text-right">
+                        <a href="{% url 'generate_qr_session' subject.id %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2 px-3.5 rounded-lg inline-flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+                            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Generate QR
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-portal-textMuted text-sm text-center py-8">No subjects have been assigned to you. Contact the Administrator.</p>
+    {% endif %}
+</div>
+{% endblock %}
+

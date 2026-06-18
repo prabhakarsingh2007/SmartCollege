@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart College Assistant{% endblock %}</title>
+    <!-- Tailwind CSS v3 Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        portal: {
+                            bg: '#0a0c10',
+                            card: '#141923',
+                            border: '#1f2735',
+                            primary: '#c5a880',
+                            primaryHover: '#b3966e',
+                            secondary: '#4a6c8d',
+                            secondaryHover: '#3b5875',
+                            textMuted: '#828a9b',
+                            success: '#3ab795',
+                            danger: '#d95d5d',
+                            warning: '#e6a15c'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    }
+                }
+            },
+            plugins: [
+                function({ addComponents }) {
+                    addComponents({
+                        '.form-control': {
+                            width: '100%',
+                            padding: '0.625rem 1rem',
+                            backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                            borderWidth: '1px',
+                            borderColor: '#1f2735',
+                            borderRadius: '0.5rem',
+                            color: '#fff',
+                            fontSize: '0.875rem',
+                            outline: '2px solid transparent',
+                            outlineOffset: '2px',
+                            transitionProperty: 'all',
+                            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                            transitionDuration: '150ms',
+                            '&:focus': {
+                                borderColor: '#c5a880',
+                                boxShadow: '0 0 0 1px #c5a880'
+                            }
+                        },
+                        '.badge': {
+                            display: 'inline-block',
+                            padding: '0.25rem 0.625rem',
+                            borderRadius: '0.25rem',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            borderWidth: '1px'
+                        },
+                        '.badge-success': {
+                            backgroundColor: 'rgba(58, 183, 149, 0.1)',
+                            color: '#3ab795',
+                            borderColor: 'rgba(58, 183, 149, 0.2)'
+                        },
+                        '.badge-danger': {
+                            backgroundColor: 'rgba(217, 93, 93, 0.1)',
+                            color: '#d95d5d',
+                            borderColor: 'rgba(217, 93, 93, 0.2)'
+                        },
+                        '.badge-warning': {
+                            backgroundColor: 'rgba(230, 161, 92, 0.1)',
+                            color: '#e6a15c',
+                            borderColor: 'rgba(230, 161, 92, 0.2)'
+                        }
+                    })
+                }
+            ]
+        }
+    </script>
+</head>
+<body class="bg-portal-bg text-slate-200 min-h-screen font-sans">
+
+    <!-- Django Messages (Floating Notifications) -->
+    {% if messages %}
+    <div class="fixed top-6 right-6 z-[1000] flex flex-col gap-3">
+        {% for message in messages %}
+        <div class="django-message px-6 py-4 rounded-lg bg-portal-card border border-portal-border text-white text-sm font-medium shadow-2xl transition-all
+            {% if message.tags == 'success' %} border-l-4 border-l-portal-success
+            {% elif message.tags == 'error' or message.tags == 'danger' %} border-l-4 border-l-portal-danger
+            {% else %} border-l-4 border-l-portal-warning {% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex min-h-screen">
+        {% if user.is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <aside class="w-[70px] md:w-[250px] bg-portal-card border-r border-portal-border px-3 md:px-5 py-8 flex flex-col fixed h-screen z-100 transition-all">
+            <!-- Brand -->
+            <a href="{% url 'dashboard' %}" class="flex items-center gap-2.5 text-xl font-extrabold text-white tracking-tight mb-10 overflow-hidden">
+                <i data-lucide="graduation-cap" class="text-portal-primary min-w-[24px]"></i>
+                <span class="hidden md:inline">Smart<span class="text-portal-primary">College</span></span>
+            </a>
+            
+            <!-- Menu -->
+            <nav class="flex-grow">
+                <ul class="flex flex-col gap-1.5">
+                    <li class="group">
+                        <a href="{% url 'dashboard' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if request.resolver_match.url_name == 'dashboard' %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Dashboard</span>
+                        </a>
+                    </li>
+                    
+                    {% if user.is_student %}
+                    <li>
+                        <a href="{% url 'student_attendance' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'attendance' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'student_assignments' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'assignments' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Assignments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'notes_list' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'notes' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Study Notes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'timetable_view' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'timetable' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Timetable</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% if user.is_teacher %}
+                    <li>
+                        <a href="{% url 'teacher_attendance_dashboard' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'attendance' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Mark Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'teacher_assignments' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'assignments' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="file-signature" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Assignments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'notes_list' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'notes' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="book-up" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Upload Notes</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if user.is_admin %}
+                    <li>
+                        <a href="/admin/" target="_blank" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold text-portal-textMuted hover:text-white hover:bg-white/5 transition-all">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Admin Panel</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{% url 'chatbot' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'chatbot' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="message-square-code" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">AI Assistant</span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="{% url 'profile_view' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'profile' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="user-cog" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">My Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- User Footer Info -->
+            <div class="pt-6 border-t border-portal-border mt-auto">
+                <div class="flex items-center gap-3 mb-5 overflow-hidden">
+                    {% if user.is_student and user.student_profile.profile_image %}
+                        <img src="{{ user.student_profile.profile_image.url }}" alt="Avatar" class="w-[38px] h-[38px] rounded-full object-cover border border-portal-primary">
+                    {% else %}
+                        <div class="w-[38px] h-[38px] rounded-full bg-white/5 border border-portal-border flex items-center justify-center text-portal-textMuted">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </div>
+                    {% endif %}
+                    <div class="hidden md:block overflow-hidden">
+                        <div class="text-[13px] font-bold text-white truncate">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="text-[11px] text-portal-textMuted capitalize">{{ user.role }}</div>
+                    </div>
+                </div>
+                <form action="{% url 'logout' %}" method="post" id="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full border border-portal-border hover:border-portal-danger hover:text-white hover:bg-portal-danger/5 text-portal-textMuted font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <span class="hidden md:inline">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+        
+        <!-- Page Main Content -->
+        <main class="flex-grow p-6 md:p-12 min-h-screen {% if user.is_authenticated %}ml-[70px] md:ml-[250px]{% else %}w-full{% endif %} transition-all">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+        
+        // Auto-dismiss floating alerts after 4 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.django-message');
+            messages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-20px)';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 4000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

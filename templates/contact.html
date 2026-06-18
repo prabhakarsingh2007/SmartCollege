@@ -1,0 +1,87 @@
+{% extends 'public_base.html' %}
+{% block title %}Contact Us - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="text-center mb-16 flex flex-col gap-2">
+    <h1 class="text-3xl font-extrabold text-white tracking-tight">
+        Get in Touch
+    </h1>
+    <p class="text-portal-textMuted max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+        Have questions about onboarding your campus? Fill out the form or drop us an email.
+    </p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[950px] mx-auto">
+    <!-- Contact Info -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex flex-col gap-8">
+        <div>
+            <h3 class="text-white text-lg font-bold mb-2">Campus Information</h3>
+            <p class="text-portal-textMuted text-sm leading-relaxed">
+                Find us in the main administrative building block or reach out via official support channels.
+            </p>
+        </div>
+        
+        <div class="flex flex-col gap-6">
+            <div class="flex gap-4 items-center">
+                <div class="w-10 h-10 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary flex-shrink-0">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h5 class="text-white text-sm font-bold">Main Address</h5>
+                    <p class="text-portal-textMuted text-xs mt-0.5">Admin Block A, University Campus Road, India</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 items-center">
+                <div class="w-10 h-10 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary flex-shrink-0">
+                    <i data-lucide="mail" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h5 class="text-white text-sm font-bold">Support Email</h5>
+                    <p class="text-portal-textMuted text-xs mt-0.5">support@smartcollege.edu</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 items-center">
+                <div class="w-10 h-10 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary flex-shrink-0">
+                    <i data-lucide="phone" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h5 class="text-white text-sm font-bold">Administrative Line</h5>
+                    <p class="text-portal-textMuted text-xs mt-0.5">+91 1800 234 5678</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-8">
+        <h3 class="text-white text-lg font-bold mb-6">Send a Message</h3>
+        
+        <form method="post" action="" onsubmit="event.preventDefault(); alert('Thank you for reaching out! We will contact you soon.');" class="space-y-4">
+            <div>
+                <label for="name" class="block text-xs font-bold text-portal-textMuted uppercase tracking-wider mb-2">Your Name</label>
+                <input type="text" id="name" required
+                       class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full px-4 py-2.5 focus:outline-none transition-all"
+                       placeholder="e.g. Rahul Verma">
+            </div>
+            <div>
+                <label for="email" class="block text-xs font-bold text-portal-textMuted uppercase tracking-wider mb-2">Email Address</label>
+                <input type="email" id="email" required
+                       class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full px-4 py-2.5 focus:outline-none transition-all"
+                       placeholder="name@domain.com">
+            </div>
+            <div>
+                <label for="msg" class="block text-xs font-bold text-portal-textMuted uppercase tracking-wider mb-2">Message / Query</label>
+                <textarea id="msg" required rows="4"
+                          class="bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block w-full px-4 py-2.5 focus:outline-none transition-all resize-none"
+                          placeholder="Detail your campus query here..."></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99] mt-2">
+                <i data-lucide="send" class="w-4 h-4"></i> Send Message
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

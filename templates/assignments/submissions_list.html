@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Submissions - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Student Submissions</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Assignment: <span class="text-portal-secondary font-bold">{{ assignment.title }}</span></p>
+    </div>
+    <a href="{% url 'teacher_assignments' %}" class="border border-portal-border hover:border-portal-primary hover:text-white text-portal-textMuted font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-1.5 transition-all self-start md:self-auto">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Assignments
+    </a>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 md:p-8 shadow-2xl">
+    <h3 class="text-white text-lg font-bold mb-6 flex items-center gap-2">
+        <i data-lucide="clipboard-list" class="text-portal-primary w-5 h-5"></i> Submissions Log
+    </h3>
+    
+    {% if submissions %}
+    <div class="overflow-x-auto w-full">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                    <th class="pb-3 pr-4">Student Name</th>
+                    <th class="pb-3 pr-4">Roll Number</th>
+                    <th class="pb-3 pr-4">Submitted At</th>
+                    <th class="pb-3 pr-4">Submitted File</th>
+                    <th class="pb-3 pr-4">Status</th>
+                    <th class="pb-3 pr-4">Grade / Feedback</th>
+                    <th class="pb-3 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm">
+                {% for submission in submissions %}
+                <tr class="hover:bg-white/5 transition-all">
+                    <td class="py-4 pr-4 font-semibold text-white">{{ submission.student.user.get_full_name|default:submission.student.user.username }}</td>
+                    <td class="py-4 pr-4 font-bold text-white">{{ submission.student.roll_no }}</td>
+                    <td class="py-4 pr-4 text-portal-textMuted">{{ submission.submitted_at|date:"M d, g:i A" }}</td>
+                    <td class="py-4 pr-4">
+                        <a href="{{ submission.file.url }}" class="inline-flex items-center gap-1 text-portal-secondary hover:text-portal-secondaryHover font-semibold transition-all" download>
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Download File
+                        </a>
+                    </td>
+                    <td class="py-4 pr-4">
+                        {% if submission.status == 'Graded' %}
+                        <span class="inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-portal-success/10 text-portal-success border border-portal-success/20">Graded</span>
+                        {% else %}
+                        <span class="inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-portal-warning/10 text-portal-warning border border-portal-warning/20">Submitted</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 pr-4">
+                        {% if submission.status == 'Graded' %}
+                            <span class="font-extrabold text-portal-success text-base block">{{ submission.grade }}</span>
+                            {% if submission.feedback %}
+                            <span class="text-xs text-portal-textMuted mt-0.5 block truncate max-w-[150px]" title="{{ submission.feedback }}">{{ submission.feedback }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-portal-textMuted text-xs">Not Graded</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 text-right">
+                        <a href="{% url 'grade_submission' submission.id %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2 px-3.5 rounded-lg inline-flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> {% if submission.status == 'Graded' %}Regrade{% else %}Grade{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-portal-textMuted text-sm text-center py-8">No student has submitted this assignment yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

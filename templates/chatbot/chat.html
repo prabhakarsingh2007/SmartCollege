@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="top-header mb-8">
+    <div class="page-title">
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">AI College Assistant</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Ask anything about your courses, grades, timetable, attendance, or general topics</p>
+    </div>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-5 md:p-6 shadow-2xl flex flex-col h-[calc(100vh-220px)]">
+    <!-- Chat messages window -->
+    <div id="chat-box" class="flex-grow overflow-y-auto p-4 mb-4 rounded-lg bg-black/15 border border-portal-border flex flex-col gap-4">
+        {% if history %}
+            {% for chat in history %}
+                <!-- User message -->
+                <div class="max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-portal-primary text-slate-950 font-medium self-end rounded-br-none shadow-md">
+                    {{ chat.question }}
+                </div>
+                <!-- Bot response -->
+                <div class="max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-white/5 border border-portal-border text-slate-200 self-start rounded-bl-none leading-relaxed">
+                    {{ chat.answer|linebreaksbr }}
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- Welcome message if no history -->
+            <div id="welcome-message" class="max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-white/5 border border-portal-border text-slate-200 self-start rounded-bl-none leading-relaxed">
+                Hello! I am your AI College Assistant. You can ask me questions like:
+                <br><br>
+                - <em>"What classes do I have on Monday?"</em>
+                <br>
+                - <em>"What is my attendance percentage?"</em>
+                <br>
+                - <em>"Do I have any pending assignments?"</em>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Input box form -->
+    <form id="chat-form" class="flex gap-3 mt-auto">
+        {% csrf_token %}
+        <input type="text" id="chat-input" required autocomplete="off"
+               class="flex-grow bg-black/25 border border-portal-border text-white placeholder-slate-600 text-sm rounded-lg focus:border-portal-primary focus:ring-1 focus:ring-portal-primary block px-4 py-3 focus:outline-none transition-all"
+               placeholder="Ask your question here...">
+        <button type="submit" id="send-btn" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold px-5 rounded-lg transition-all flex items-center justify-center active:scale-[0.98]">
+            <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    
+    // Auto-scroll chat box to bottom
+    function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    scrollToBottom();
+    
+    // Intercept form submission
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const question = chatInput.value.trim();
+        if (!question) return;
+        
+        // Remove welcome message if it exists
+        const welcome = document.getElementById('welcome-message');
+        if (welcome) welcome.remove();
+        
+        // 1. Append User Message
+        const userMsgDiv = document.createElement('div');
+        userMsgDiv.className = 'max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-portal-primary text-slate-950 font-medium self-end rounded-br-none shadow-md';
+        userMsgDiv.textContent = question;
+        chatBox.appendChild(userMsgDiv);
+        scrollToBottom();
+        
+        // Clear input
+        chatInput.value = '';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        
+        // 2. Append Typing/Loading indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-white/5 border border-portal-border text-slate-200 self-start rounded-bl-none leading-relaxed';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = '<span style="opacity: 0.6;">AI is thinking...</span>';
+        chatBox.appendChild(typingDiv);
+        scrollToBottom();
+        
+        // 3. Post to API
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch("{% url 'chatbot' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ question: question })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove typing indicator
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+            
+            // Re-enable inputs
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
+            
+            if (data.status === 'success') {
+                // Append Bot Response
+                const botMsgDiv = document.createElement('div');
+                botMsgDiv.className = 'max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-white/5 border border-portal-border text-slate-200 self-start rounded-bl-none leading-relaxed';
+                // Replace newlines with HTML breaks
+                botMsgDiv.innerHTML = data.answer.replace(/\n/g, '<br>');
+                chatBox.appendChild(botMsgDiv);
+                
+                // Re-initialize Lucide Icons if any were loaded dynamically
+                lucide.createIcons();
+                scrollToBottom();
+            } else {
+                showError("An error occurred while generating a response.");
+            }
+        })
+        .catch(error => {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            showError("Network error. Please try again.");
+            console.error(error);
+        });
+    });
+    
+    function showError(msg) {
+        const botMsgDiv = document.createElement('div');
+        botMsgDiv.className = 'max-w-[70%] px-4 py-2.5 rounded-lg text-sm bg-white/5 border border-portal-danger text-portal-danger self-start rounded-bl-none leading-relaxed';
+        botMsgDiv.textContent = msg;
+        chatBox.appendChild(botMsgDiv);
+        scrollToBottom();
+    }
+</script>
+{% endblock %}

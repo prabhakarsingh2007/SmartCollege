@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}QR Scan-in - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">QR Attendance Scan-In</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Verify your presence in today's class</p>
+    </div>
+    <a href="{% url 'student_attendance' %}" class="border border-portal-border hover:border-portal-primary hover:text-white text-portal-textMuted font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-1.5 transition-all self-start md:self-auto">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> My Attendance
+    </a>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-8 shadow-2xl max-w-[500px] mx-auto">
+    <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-full bg-portal-primary/10 border-2 border-dashed border-portal-primary flex items-center justify-center mx-auto mb-4 text-portal-primary">
+            <i data-lucide="qr-code" class="w-8 h-8"></i>
+        </div>
+        <h2 class="text-white text-xl font-bold tracking-tight">Enter Class Token</h2>
+        <p class="text-portal-textMuted text-xs mt-1">
+            Please enter the alphanumeric token displayed on the classroom screen
+        </p>
+    </div>
+
+    <form method="post" action="{% url 'scan_qr_attendance' %}" class="space-y-6">
+        {% csrf_token %}
+        <div>
+            <label for="token-input" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Active Session Token (UUID)</label>
+            <input type="text" name="qr_token" id="token-input" required
+                   class="w-full px-4 py-3.5 bg-black/25 border border-portal-border rounded-lg text-white font-mono text-center text-sm outline-none tracking-wider transition-all focus:border-portal-primary focus:ring-1 focus:ring-portal-primary"
+                   placeholder="e.g. 9df6b5c3-d922-488b-a3d8-e7b3992b45cf">
+        </div>
+        
+        <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-3.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+            <i data-lucide="shield-check" class="w-4 h-4"></i> Submit Token & Check-In
+        </button>
+    </form>
+</div>
+{% endblock %}

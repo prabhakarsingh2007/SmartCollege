@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}QR Session - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Active QR Attendance Session</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Subject: <span class="text-portal-secondary font-bold">{{ session.subject.name }} ({{ session.subject.code }})</span></p>
+    </div>
+    <a href="{% url 'teacher_attendance_dashboard' %}" class="border border-portal-border hover:border-portal-danger hover:text-white hover:bg-portal-danger/5 text-portal-textMuted font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-1.5 transition-all self-start md:self-auto">
+        <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Close Session
+    </a>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-8 shadow-2xl max-w-[500px] mx-auto text-center flex flex-col items-center gap-6">
+    <div>
+        <h2 class="text-white text-xl font-bold tracking-tight">Scan to Mark Present</h2>
+        <p class="text-portal-textMuted text-xs mt-1">Open your portal scan-in page or enter the code below</p>
+    </div>
+    
+    <div class="bg-white p-4 rounded-xl shadow-lg border border-portal-border/40">
+        <!-- Render Base64 encoded QR Code -->
+        <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" class="w-[260px] h-[260px] rounded-lg transition-opacity duration-500" id="qr-image">
+    </div>
+    
+    <div class="w-full bg-black/20 border border-portal-border rounded-lg p-4 text-center">
+        <div class="text-lg font-bold text-portal-primary tracking-wide" id="timer-display">Loading timer...</div>
+        <div class="text-[10px] text-portal-textMuted mt-1">
+            Session started: {{ session.created_at|time:"g:i:s A" }} | Expires at: {{ session.expires_at|time:"g:i:s A" }}
+        </div>
+    </div>
+
+    <div class="w-full text-xs text-portal-textMuted font-mono break-all bg-black/30 border border-portal-border/60 p-3 rounded-lg flex flex-col gap-1">
+        <span class="text-[10px] uppercase font-semibold text-portal-textMuted tracking-wider">Active Token (UUID)</span>
+        <span class="text-portal-primary font-bold select-all">{{ session.token }}</span>
+    </div>
+</div>
+
+<script>
+    const expirationTime = new Date("{{ expires }}").getTime();
+    
+    const countdown = setInterval(function() {
+        const now = new Date().getTime();
+        const distance = expirationTime - now;
+        
+        if (distance < 0) {
+            clearInterval(countdown);
+            const display = document.getElementById("timer-display");
+            display.innerHTML = "SESSION EXPIRED";
+            display.style.color = "#ef4444"; // red-500
+            const img = document.getElementById("qr-image");
+            if (img) img.style.opacity = "0.15";
+            return;
+        }
+        
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById("timer-display").innerHTML = 
+            `Expires in: ${minutes}m ${seconds}s`;
+    }, 1000);
+</script>
+{% endblock %}

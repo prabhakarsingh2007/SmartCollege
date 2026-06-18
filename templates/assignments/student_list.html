@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}My Assignments - Smart College Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Assignments</h1>
+        <p class="text-portal-textMuted text-sm mt-1">Homework, project tasks, and lab assessments assigned to you</p>
+    </div>
+</div>
+
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 md:p-8 shadow-2xl">
+    <h3 class="text-white text-lg font-bold mb-6 flex items-center gap-2">
+        <i data-lucide="clipboard-list" class="text-portal-primary w-5 h-5"></i> My Assignments
+    </h3>
+    
+    {% if assignments %}
+    <div class="overflow-x-auto w-full">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                    <th class="pb-3 pr-4">Subject</th>
+                    <th class="pb-3 pr-4">Assignment Title</th>
+                    <th class="pb-3 pr-4">Deadline</th>
+                    <th class="pb-3 pr-4">Submission Status</th>
+                    <th class="pb-3 pr-4">Grade / Feedback</th>
+                    <th class="pb-3 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm">
+                {% for assignment in assignments %}
+                <tr class="hover:bg-white/5 transition-all">
+                    <td class="py-4 pr-4">
+                        <span class="font-bold text-white block">{{ assignment.subject.code }}</span>
+                        <span class="text-xs text-portal-textMuted block mt-0.5">{{ assignment.subject.name }}</span>
+                    </td>
+                    <td class="py-4 pr-4 max-w-xs">
+                        <span class="font-bold text-white block">{{ assignment.title }}</span>
+                        <p class="text-xs text-portal-textMuted mt-1 leading-relaxed">{{ assignment.description|truncatewords:12 }}</p>
+                        {% if assignment.file %}
+                        <a href="{{ assignment.file.url }}" class="inline-flex items-center gap-1 text-[11px] text-portal-secondary hover:text-portal-secondaryHover font-semibold mt-2 transition-all" download>
+                            <i data-lucide="paperclip" class="w-3 h-3"></i> Reference File
+                        </a>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 pr-4">
+                        <span class="text-sm {% if assignment.is_past_deadline %}text-red-400 font-semibold{% else %}text-slate-300{% endif %}">
+                            {{ assignment.deadline|date:"M d, g:i A" }}
+                        </span>
+                    </td>
+                    <td class="py-4 pr-4">
+                        {% if assignment.user_submission %}
+                            {% if assignment.user_submission.status == 'Graded' %}
+                            <span class="inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-portal-success/10 text-portal-success border border-portal-success/20">Graded</span>
+                            {% else %}
+                            <span class="inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-portal-warning/10 text-portal-warning border border-portal-warning/20">Submitted</span>
+                            {% endif %}
+                        {% else %}
+                            {% if assignment.is_past_deadline %}
+                            <span class="inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-portal-danger/10 text-portal-danger border border-portal-danger/20">Missing</span>
+                            {% else %}
+                            <span class="inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-red-500/5 text-red-300 border border-red-500/10">Pending</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="py-4 pr-4">
+                        {% if assignment.user_submission and assignment.user_submission.status == 'Graded' %}
+                            <span class="font-extrabold text-portal-success text-base block">{{ assignment.user_submission.grade }}</span>
+                            {% if assignment.user_submission.feedback %}
+                            <span class="text-xs text-portal-textMuted mt-1 block truncate max-w-[150px]" title="{{ assignment.user_submission.feedback }}">
+                                Feedback: {{ assignment.user_submission.feedback }}
+                            </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-portal-textMuted text-xs">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 text-right">
+                        {% if assignment.user_submission %}
+                            <span class="text-xs text-portal-textMuted">Submitted {{ assignment.user_submission.submitted_at|date:"M d" }}</span>
+                        {% else %}
+                            {% if assignment.is_past_deadline %}
+                                <span class="text-xs text-portal-danger font-bold uppercase tracking-wider">Closed</span>
+                            {% else %}
+                                <a href="{% url 'submit_assignment' assignment.id %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2 px-4 rounded-lg inline-flex items-center gap-1 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Submit
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-portal-textMuted text-sm text-center py-8">No assignments found for your semester.</p>
+    {% endif %}
+</div>
+{% endblock %}
