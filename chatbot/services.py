@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 
 def get_chatbot_response(user, question):
@@ -62,9 +63,7 @@ def get_chatbot_response(user, question):
         return mock_fallback_response(question, context_str)
         
     try:
-        genai.configure(api_key=api_key)
-        # Using Gemini 1.5 Flash
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        client = genai.Client(api_key=api_key)
         
         system_instruction = f"""
 You are the "Smart College Assistant", an AI helper for students and teachers of our college.
@@ -75,8 +74,14 @@ Always keep answers friendly, helpful, and concise.
 User Profile Context:
 {context_str}
 """
-        prompt = f"{system_instruction}\nUser Query: {question}\nAI Assistant:"
-        response = model.generate_content(prompt)
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction
+        )
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=question,
+            config=config
+        )
         return response.text
         
     except Exception as e:

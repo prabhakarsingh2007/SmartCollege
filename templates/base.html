@@ -116,6 +116,7 @@
             <!-- Menu -->
             <nav class="flex-grow">
                 <ul class="flex flex-col gap-1.5">
+                    {% if user.has_completed_profile %}
                     <li class="group">
                         <a href="{% url 'dashboard' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
                             {% if request.resolver_match.url_name == 'dashboard' %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
@@ -203,13 +204,22 @@
                             <span class="hidden md:inline">My Profile</span>
                         </a>
                     </li>
+                    {% else %}
+                    <li>
+                        <a href="{% url 'complete_profile' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if request.resolver_match.url_name == 'complete_profile' %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
+                            <i data-lucide="user-cog" class="w-4 h-4"></i>
+                            <span class="hidden md:inline">Setup Profile</span>
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </nav>
             
             <!-- User Footer Info -->
             <div class="pt-6 border-t border-portal-border mt-auto">
                 <div class="flex items-center gap-3 mb-5 overflow-hidden">
-                    {% if user.is_student and user.student_profile.profile_image %}
+                    {% if user.has_completed_profile and user.is_student and user.student_profile.profile_image %}
                         <img src="{{ user.student_profile.profile_image.url }}" alt="Avatar" class="w-[38px] h-[38px] rounded-full object-cover border border-portal-primary">
                     {% else %}
                         <div class="w-[38px] h-[38px] rounded-full bg-white/5 border border-portal-border flex items-center justify-center text-portal-textMuted">
@@ -252,6 +262,59 @@
                 setTimeout(() => msg.remove(), 500);
             });
         }, 4000);
+
+        // Poll for new notices
+        let lastNoticeId = null;
+
+        async function checkLatestNotice() {
+            try {
+                const response = await fetch('/notices/latest/');
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data.status === 'success') {
+                    if (lastNoticeId === null) {
+                        lastNoticeId = data.id;
+                        return;
+                    }
+                    if (data.id > lastNoticeId) {
+                        lastNoticeId = data.id;
+                        showNoticeToast(data);
+                    }
+                }
+            } catch (e) {
+                console.error("Notice check failed:", e);
+            }
+        }
+
+        function showNoticeToast(notice) {
+            const container = document.createElement('div');
+            container.className = "fixed bottom-6 right-6 z-[1000] flex flex-col gap-3 max-w-[340px]";
+            container.innerHTML = `
+                <div class="px-5 py-4 rounded-lg bg-portal-card border border-portal-primary/60 text-white text-sm font-medium shadow-2xl transition-all border-l-4 border-l-portal-primary flex flex-col gap-2 relative">
+                    <button onclick="this.parentElement.parentElement.remove()" class="absolute top-2 right-2 text-portal-textMuted hover:text-white transition-all text-sm font-bold">&times;</button>
+                    <div class="flex items-center gap-1.5 text-portal-primary font-bold text-[10px] uppercase tracking-wider">
+                        <i data-lucide="megaphone" class="w-3.5 h-3.5"></i> New Announcement
+                    </div>
+                    <div class="font-bold text-[13px] text-white">${notice.title}</div>
+                    <div class="text-xs text-portal-textMuted leading-relaxed">${notice.description}</div>
+                    <div class="text-[9px] text-portal-textMuted mt-1">Posted by ${notice.created_by} | ${notice.created_at}</div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                container.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+                container.style.opacity = '0';
+                container.style.transform = 'translateY(20px)';
+                setTimeout(() => container.remove(), 800);
+            }, 8000);
+        }
+
+        {% if user.is_authenticated %}
+        setInterval(checkLatestNotice, 15000);
+        setTimeout(checkLatestNotice, 3000);
+        {% endif %}
     </script>
     {% block scripts %}{% endblock %}
 </body>

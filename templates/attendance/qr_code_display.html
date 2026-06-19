@@ -37,27 +37,73 @@
 </div>
 
 <script>
-    const expirationTime = new Date("{{ expires }}").getTime();
-    
+    let expirationTime = new Date("{{ expires }}").getTime();
+    let isExpired = false;
+    let refreshInProgress = false;
+
+    // Refresh dynamic token from the server
+    async function rotateToken() {
+        if (refreshInProgress || isExpired) return;
+        refreshInProgress = true;
+        
+        const timerDisplay = document.getElementById("timer-display");
+        timerDisplay.innerHTML = '<span class="inline-flex items-center"><i data-lucide="loader" class="w-4 h-4 animate-spin mr-1"></i> Rotating QR code...</span>';
+        lucide.createIcons();
+        
+        try {
+            const response = await fetch("{% url 'refresh_qr_session' session.id %}");
+            const data = await response.json();
+            
+            if (response.ok && data.status === 'success') {
+                // Update QR code image
+                const img = document.getElementById("qr-image");
+                img.src = `data:image/png;base64,${data.qr_base64}`;
+                img.style.opacity = "1";
+                
+                // Update UUID text display
+                const tokenSpan = document.querySelector(".select-all");
+                if (tokenSpan) tokenSpan.textContent = data.token;
+                
+                // Reset expiration time
+                expirationTime = new Date(data.expires).getTime();
+                refreshInProgress = false;
+            } else {
+                handleSessionExpiration(data.message || "Session closed");
+            }
+        } catch (error) {
+            console.error("Error rotating token:", error);
+            refreshInProgress = false;
+        }
+    }
+
+    function handleSessionExpiration(message) {
+        isExpired = true;
+        const display = document.getElementById("timer-display");
+        display.innerHTML = message.toUpperCase();
+        display.style.color = "#d95d5d"; // portal-danger
+        const img = document.getElementById("qr-image");
+        if (img) img.style.opacity = "0.15";
+    }
+
     const countdown = setInterval(function() {
+        if (isExpired) {
+            clearInterval(countdown);
+            return;
+        }
+
         const now = new Date().getTime();
         const distance = expirationTime - now;
         
-        if (distance < 0) {
-            clearInterval(countdown);
-            const display = document.getElementById("timer-display");
-            display.innerHTML = "SESSION EXPIRED";
-            display.style.color = "#ef4444"; // red-500
-            const img = document.getElementById("qr-image");
-            if (img) img.style.opacity = "0.15";
+        if (distance <= 0) {
+            if (!refreshInProgress) {
+                rotateToken();
+            }
             return;
         }
         
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
         document.getElementById("timer-display").innerHTML = 
-            `Expires in: ${minutes}m ${seconds}s`;
+            `Token rotates in: ${seconds}s`;
     }, 1000);
 </script>
 {% endblock %}

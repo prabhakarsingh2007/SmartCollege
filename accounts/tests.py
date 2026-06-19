@@ -65,3 +65,37 @@ class AccountsTestCase(TestCase):
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('login'), response.url)
+
+    def test_authenticated_user_without_profile_redirects_to_complete_profile(self):
+        """Verify that an authenticated student without a profile is redirected to complete_profile."""
+        self.client.login(username='student1', password='testpassword123')
+        
+        # Accessing dashboard should redirect to complete_profile
+        response = self.client.get(reverse('dashboard'))
+        self.assertRedirects(response, reverse('complete_profile'))
+
+        # Accessing timetable should redirect to complete_profile
+        response = self.client.get(reverse('timetable_view'))
+        self.assertRedirects(response, reverse('complete_profile'))
+
+    def test_authenticated_user_with_profile_can_access_dashboard(self):
+        """Verify that an authenticated student with a profile can access the dashboard."""
+        from courses.models import Department
+        from students.models import Student
+        
+        # Create department and profile
+        dept = Department.objects.create(name='Computer Science', code='CSE')
+        Student.objects.create(
+            user=self.student_user,
+            roll_no='12345',
+            registration_no='REG12345',
+            department=dept,
+            semester=3,
+            phone='1234567890'
+        )
+        
+        self.client.login(username='student1', password='testpassword123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('subject_names', response.context)
+        self.assertIn('subject_pcts', response.context)

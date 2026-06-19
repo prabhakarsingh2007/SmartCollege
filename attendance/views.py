@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.http import JsonResponse
 from .models import Attendance, QRSession
 from courses.models import Subject
 from students.models import Student
@@ -9,6 +10,20 @@ from django.urls import reverse
 import qrcode
 import io
 import base64
+import math
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    # Radius of the Earth in meters
+    R = 6371000.0
+    try:
+        lat1, lon1, lat2, lon2 = map(math.radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
+    except (ValueError, TypeError):
+        return float('inf')
 
 @login_required
 def student_attendance(request):
@@ -101,11 +116,17 @@ def generate_qr_session(request, subject_id):
     # Deactivate existing sessions for this subject
     QRSession.objects.filter(subject=subject, is_active=True).update(is_active=False)
     
-    # Create new QR Session expiring in 5 minutes
-    expires = timezone.now() + timezone.timedelta(minutes=5)
+    # Get teacher's coordinates if provided
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+    
+    # Create new QR Session expiring in 20 seconds initially for dynamic rotation
+    expires = timezone.now() + timezone.timedelta(seconds=20)
     session = QRSession.objects.create(
         subject=subject,
         teacher=user.teacher_profile,
+        latitude=lat if lat else None,
+        longitude=lng if lng else None,
         expires_at=expires
     )
     
@@ -126,6 +147,43 @@ def generate_qr_session(request, subject_id):
     })
 
 @login_required
+def refresh_qr_session(request, session_id):
+    user = request.user
+    if user.role != 'teacher':
+        return JsonResponse({'status': 'error', 'message': 'Access denied.'}, status=403)
+        
+    session = get_object_or_404(QRSession, id=session_id, teacher__user=user)
+    
+    # Enforce overall session expiration (10 minutes total active class window)
+    if timezone.now() > session.created_at + timezone.timedelta(minutes=10):
+        session.is_active = False
+        session.save()
+        return JsonResponse({'status': 'error', 'message': 'Session expired.'}, status=400)
+        
+    # Rotate dynamic token
+    import uuid
+    session.token = uuid.uuid4()
+    session.expires_at = timezone.now() + timezone.timedelta(seconds=20)
+    session.save()
+    
+    # Generate new dynamic QR image
+    qr_data = session.token.hex
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    qr_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    
+    return JsonResponse({
+        'status': 'success',
+        'token': str(session.token),
+        'qr_base64': qr_base64,
+        'expires': session.expires_at.isoformat()
+    })
+
+@login_required
 def scan_qr_attendance(request):
     user = request.user
     if user.role != 'student':
@@ -136,19 +194,33 @@ def scan_qr_attendance(request):
     
     if request.method == 'POST':
         token_str = request.POST.get('qr_token', '').strip()
+        student_lat = request.POST.get('latitude')
+        student_lng = request.POST.get('longitude')
+        
         try:
             session = QRSession.objects.get(token=token_str, is_active=True)
-            # Check expiration
-            if timezone.now() > session.expires_at:
-                session.is_active = False
-                session.save()
-                messages.error(request, "This QR code session has expired.")
-                return redirect('student_attendance')
+            
+            # Check expiration (accounting for small 5 seconds network latency grace period)
+            if timezone.now() > session.expires_at + timezone.timedelta(seconds=5):
+                messages.error(request, "This QR code token has expired. Please check the screen for the updated QR code.")
+                return redirect('scan_qr_attendance')
                 
             # Verify student belongs to this subject's department/semester
             if session.subject.department != student.department or session.subject.semester != student.semester:
                 messages.error(request, "You are not enrolled in this class's department/semester.")
                 return redirect('student_attendance')
+                
+            # Validate geofencing if session contains coordinates
+            if session.latitude is not None and session.longitude is not None:
+                if not student_lat or not student_lng:
+                    messages.error(request, "Location access is required to mark attendance. Please enable location permissions.")
+                    return redirect('scan_qr_attendance')
+                
+                distance = calculate_distance(session.latitude, session.longitude, student_lat, student_lng)
+                # Enforce 50 meters limit
+                if distance > 50.0:
+                    messages.error(request, f"Location verification failed. You are {round(distance, 1)}m away from the classroom (Max allowed is 50m).")
+                    return redirect('scan_qr_attendance')
                 
             # Mark attendance
             Attendance.objects.update_or_create(

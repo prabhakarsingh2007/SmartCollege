@@ -50,7 +50,7 @@ def logout_view(request):
     if request.method == 'POST':
         logout(request)
         messages.info(request, "You have been logged out.")
-        return redirect('login')
+        return redirect('home')
     return redirect('dashboard')
 
 @login_required
@@ -129,6 +129,19 @@ def dashboard(request):
         context['total_classes'] = total_days
         context['present_classes'] = present_days
         
+        # Attendance by Subject
+        student_subjects = Subject.objects.filter(department=student.department, semester=student.semester)
+        subject_names = []
+        subject_pcts = []
+        for subj in student_subjects:
+            s_total = Attendance.objects.filter(student=student, subject=subj).count()
+            s_present = Attendance.objects.filter(student=student, subject=subj, status='Present').count()
+            s_pct = round((s_present / s_total * 100), 1) if s_total > 0 else 0
+            subject_names.append(subj.name)
+            subject_pcts.append(s_pct)
+        context['subject_names'] = subject_names
+        context['subject_pcts'] = subject_pcts
+        
         # Upcoming Assignments
         upcoming_assignments = Assignment.objects.filter(
             subject__department=student.department,
@@ -149,6 +162,19 @@ def dashboard(request):
         # Teacher's Subjects
         subjects = Subject.objects.filter(teacher=teacher)
         context['subjects'] = subjects
+        
+        # Attendance averages for teacher's subjects
+        teacher_subject_names = []
+        teacher_attendance_averages = []
+        for subj in subjects:
+            s_attendances = Attendance.objects.filter(subject=subj)
+            total = s_attendances.count()
+            present = s_attendances.filter(status='Present').count()
+            avg = round((present / total * 100), 1) if total > 0 else 0
+            teacher_subject_names.append(subj.name)
+            teacher_attendance_averages.append(avg)
+        context['teacher_subject_names'] = teacher_subject_names
+        context['teacher_attendance_averages'] = teacher_attendance_averages
         
         # Assignments Created
         context['total_assignments'] = Assignment.objects.filter(teacher=teacher).count()

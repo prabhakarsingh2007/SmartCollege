@@ -59,6 +59,16 @@
     </div>
 </div>
 
+<!-- Student Chart Visual -->
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg mb-8">
+    <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+        <i data-lucide="line-chart" class="text-portal-primary w-5 h-5"></i> Attendance Performance by Subject
+    </h3>
+    <div class="relative h-[250px] w-full">
+        <canvas id="studentAttendanceChart"></canvas>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <!-- Upcoming Assignments List -->
     <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
@@ -160,6 +170,16 @@
         <div class="w-11 h-11 rounded-lg bg-portal-success/5 border border-portal-success/20 flex items-center justify-center text-portal-success">
             <i data-lucide="check-square" class="w-5 h-5"></i>
         </div>
+    </div>
+</div>
+
+<!-- Teacher Chart Visual -->
+<div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg mb-8">
+    <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+        <i data-lucide="bar-chart-3" class="text-portal-primary w-5 h-5"></i> Student Attendance Averages by Subject
+    </h3>
+    <div class="relative h-[250px] w-full">
+        <canvas id="teacherAttendanceChart"></canvas>
     </div>
 </div>
 
@@ -309,4 +329,104 @@
         {% endif %}
     </div>
 </div>
+
+{% if user.is_student %}
+    {{ subject_names|json_script:"subject-names-data" }}
+    {{ subject_pcts|json_script:"subject-pcts-data" }}
+{% elif user.is_teacher %}
+    {{ teacher_subject_names|json_script:"teacher-subject-names-data" }}
+    {{ teacher_attendance_averages|json_script:"teacher-attendance-averages-data" }}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Student Chart initialization
+    const ctxStudent = document.getElementById('studentAttendanceChart');
+    if (ctxStudent) {
+        const names = JSON.parse(document.getElementById('subject-names-data').textContent);
+        const pcts = JSON.parse(document.getElementById('subject-pcts-data').textContent);
+        
+        new Chart(ctxStudent, {
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [{
+                    label: 'Attendance %',
+                    data: pcts,
+                    backgroundColor: 'rgba(197, 168, 128, 0.2)',
+                    borderColor: '#c5a880',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    hoverBackgroundColor: 'rgba(197, 168, 128, 0.4)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#828a9b' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#828a9b' }
+                    }
+                }
+            }
+        });
+    }
+
+    // Teacher Chart initialization
+    const ctxTeacher = document.getElementById('teacherAttendanceChart');
+    if (ctxTeacher) {
+        const names = JSON.parse(document.getElementById('teacher-subject-names-data').textContent);
+        const avgs = JSON.parse(document.getElementById('teacher-attendance-averages-data').textContent);
+        
+        new Chart(ctxTeacher, {
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [{
+                    label: 'Class Average %',
+                    data: avgs,
+                    backgroundColor: 'rgba(74, 108, 141, 0.2)',
+                    borderColor: '#4a6c8d',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    hoverBackgroundColor: 'rgba(74, 108, 141, 0.4)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#828a9b' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#828a9b' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

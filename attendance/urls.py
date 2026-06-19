@@ -6,5 +6,6 @@ urlpatterns = [
     path('teacher-dashboard/', views.teacher_attendance_dashboard, name='teacher_attendance_dashboard'),
     path('mark-manual/<int:subject_id>/', views.mark_attendance, name='mark_attendance'),
     path('generate-qr/<int:subject_id>/', views.generate_qr_session, name='generate_qr_session'),
+    path('refresh-qr/<int:session_id>/', views.refresh_qr_session, name='refresh_qr_session'),
     path('scan/', views.scan_qr_attendance, name='scan_qr_attendance'),
 ]

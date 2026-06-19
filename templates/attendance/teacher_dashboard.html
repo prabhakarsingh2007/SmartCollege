@@ -38,7 +38,7 @@
                         </a>
                     </td>
                     <td class="py-4 text-right">
-                        <a href="{% url 'generate_qr_session' subject.id %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2 px-3.5 rounded-lg inline-flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
+                        <a href="{% url 'generate_qr_session' subject.id %}" onclick="generateQRWithLocation(event, '{% url 'generate_qr_session' subject.id %}')" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-2 px-3.5 rounded-lg inline-flex items-center gap-1.5 transition-all shadow-lg shadow-amber-500/5 active:scale-[0.99]">
                             <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Generate QR
                         </a>
                     </td>
@@ -51,5 +51,50 @@
     <p class="text-portal-textMuted text-sm text-center py-8">No subjects have been assigned to you. Contact the Administrator.</p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function generateQRWithLocation(event, url) {
+    event.preventDefault();
+    const btn = event.currentTarget;
+    const originalContent = btn.innerHTML;
+    
+    // Disable clicking while fetching location
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.6';
+    btn.innerHTML = '<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Getting Location...';
+    lucide.createIcons();
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                window.location.href = `${url}?lat=${lat}&lng=${lng}`;
+            },
+            (error) => {
+                console.warn("Geolocation failed:", error.message);
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
+                btn.innerHTML = originalContent;
+                lucide.createIcons();
+                
+                if (confirm("Could not retrieve your location. Generate QR code session without Geofencing?")) {
+                    window.location.href = url;
+                }
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    } else {
+        alert("Geolocation is not supported by this browser.");
+        btn.style.pointerEvents = 'auto';
+        btn.style.opacity = '1';
+        btn.innerHTML = originalContent;
+        lucide.createIcons();
+        window.location.href = url;
+    }
+}
+</script>
 {% endblock %}
 

@@ -21,6 +21,8 @@ class QRSession(models.Model):
     subject = models.ForeignKey('courses.Subject', on_delete=models.CASCADE, related_name='qr_sessions')
     teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE, related_name='qr_sessions')
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_active = models.BooleanField(default=True)

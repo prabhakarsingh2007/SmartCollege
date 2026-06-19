@@ -21,5 +21,15 @@ class User(AbstractUser):
     def is_admin(self):
         return self.role == 'admin' or self.is_superuser
 
+    @property
+    def has_completed_profile(self):
+        if self.is_admin:
+            return True
+        if self.role == 'student':
+            return hasattr(self, 'student_profile')
+        if self.role == 'teacher':
+            return hasattr(self, 'teacher_profile')
+        return False
+
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
