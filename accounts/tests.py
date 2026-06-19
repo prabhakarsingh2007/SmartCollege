@@ -99,3 +99,44 @@ class AccountsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('subject_names', response.context)
         self.assertIn('subject_pcts', response.context)
+
+    def test_non_admin_cannot_access_custom_admin_panel(self):
+        """Verify that a student user is blocked from the custom admin panel."""
+        from courses.models import Department
+        from students.models import Student
+        dept = Department.objects.create(name='Computer Science', code='CSE')
+        Student.objects.create(
+            user=self.student_user,
+            roll_no='12345',
+            registration_no='REG12345',
+            department=dept,
+            semester=3,
+            phone='1234567890'
+        )
+        self.client.login(username='student1', password='testpassword123')
+        response = self.client.get(reverse('custom_admin_panel'))
+        # Should redirect to dashboard
+        self.assertRedirects(response, reverse('dashboard'))
+
+    def test_admin_can_access_custom_admin_panel(self):
+        """Verify that an administrator can load the custom admin panel."""
+        self.client.login(username='admin1', password='testpassword123')
+        response = self.client.get(reverse('custom_admin_panel'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('active_tab', response.context)
+
+    def test_admin_can_create_department_via_post(self):
+        """Verify that an admin can create a department via the panel POST request."""
+        from courses.models import Department
+        self.client.login(username='admin1', password='testpassword123')
+        
+        response = self.client.post(reverse('custom_admin_panel') + "?tab=departments", {
+            'action': 'add_department',
+            'name': 'Civil Engineering',
+            'code': 'CIVIL'
+        })
+        # Should redirect back to admin-panel?tab=departments
+        self.assertRedirects(response, reverse('custom_admin_panel') + "?tab=departments")
+        
+        # Verify in DB
+        self.assertTrue(Department.objects.filter(code='CIVIL', name='Civil Engineering').exists())

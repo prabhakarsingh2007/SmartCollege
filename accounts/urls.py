@@ -12,4 +12,5 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/complete/', views.complete_profile, name='complete_profile'),
     path('profile/', views.profile_view, name='profile_view'),
+    path('admin-panel/', views.custom_admin_panel, name='custom_admin_panel'),
 ]

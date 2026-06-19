@@ -1,0 +1,590 @@
+{% extends 'base.html' %}
+{% block title %}Admin Control Panel - Smart College Assistant{% endblock %}
+
+{% block content %}
+<!-- Admin Dashboard Header -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <i data-lucide="settings" class="text-portal-primary w-8 h-8"></i> Admin Control Panel
+        </h1>
+        <p class="text-portal-textMuted text-sm mt-1">Manage institutional departments, subjects, timetables, and view user rosters</p>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<div class="flex border-b border-portal-border/60 overflow-x-auto gap-2 mb-8 no-scrollbar">
+    <a href="?tab=overview" class="px-5 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2
+        {% if active_tab == 'overview' %} border-portal-primary text-portal-primary bg-portal-primary/5 {% else %} border-transparent text-portal-textMuted hover:text-white {% endif %}">
+        <i data-lucide="activity" class="w-4 h-4"></i> Overview
+    </a>
+    <a href="?tab=departments" class="px-5 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2
+        {% if active_tab == 'departments' %} border-portal-primary text-portal-primary bg-portal-primary/5 {% else %} border-transparent text-portal-textMuted hover:text-white {% endif %}">
+        <i data-lucide="building" class="w-4 h-4"></i> Departments
+    </a>
+    <a href="?tab=subjects" class="px-5 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2
+        {% if active_tab == 'subjects' %} border-portal-primary text-portal-primary bg-portal-primary/5 {% else %} border-transparent text-portal-textMuted hover:text-white {% endif %}">
+        <i data-lucide="book-open" class="w-4 h-4"></i> Subjects
+    </a>
+    <a href="?tab=timetable" class="px-5 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2
+        {% if active_tab == 'timetable' %} border-portal-primary text-portal-primary bg-portal-primary/5 {% else %} border-transparent text-portal-textMuted hover:text-white {% endif %}">
+        <i data-lucide="calendar" class="w-4 h-4"></i> Timetable
+    </a>
+    <a href="?tab=users" class="px-5 py-3 text-sm font-bold border-b-2 whitespace-nowrap transition-all flex items-center gap-2
+        {% if active_tab == 'users' %} border-portal-primary text-portal-primary bg-portal-primary/5 {% else %} border-transparent text-portal-textMuted hover:text-white {% endif %}">
+        <i data-lucide="users" class="w-4 h-4"></i> Users
+    </a>
+</div>
+
+<!-- Tab Content Areas -->
+{% if active_tab == 'overview' %}
+    <!-- OVERVIEW TAB -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+            <div>
+                <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Total Students</div>
+                <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_students }}</div>
+            </div>
+            <div class="w-11 h-11 rounded-lg bg-portal-primary/5 border border-portal-primary/20 flex items-center justify-center text-portal-primary">
+                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+            </div>
+        </div>
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+            <div>
+                <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Total Teachers</div>
+                <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_teachers }}</div>
+            </div>
+            <div class="w-11 h-11 rounded-lg bg-portal-secondary/5 border border-portal-secondary/20 flex items-center justify-center text-portal-secondary">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+            </div>
+        </div>
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+            <div>
+                <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Departments</div>
+                <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_departments }}</div>
+            </div>
+            <div class="w-11 h-11 rounded-lg bg-portal-success/5 border border-portal-success/20 flex items-center justify-center text-portal-success">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+            </div>
+        </div>
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 flex justify-between items-center shadow-lg">
+            <div>
+                <div class="text-[11px] font-bold text-portal-textMuted uppercase tracking-wider mb-1">Assigned Subjects</div>
+                <div class="text-3xl font-extrabold text-white tracking-tight">{{ total_subjects }}</div>
+            </div>
+            <div class="w-11 h-11 rounded-lg bg-portal-warning/5 border border-portal-warning/20 flex items-center justify-center text-portal-warning">
+                <i data-lucide="book" class="w-5 h-5"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Notices list in overview -->
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+        <div class="flex justify-between items-center mb-6 border-b border-portal-border/60 pb-4">
+            <h3 class="text-white font-bold flex items-center gap-2">
+                <i data-lucide="megaphone" class="text-portal-primary w-5 h-5"></i> Active Bulletins & Notices
+            </h3>
+            <a href="{% url 'create_notice' %}" class="bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-xs py-1.5 px-3 rounded-lg transition-all">Add Notice</a>
+        </div>
+        {% if notices %}
+            <div class="space-y-4">
+                {% for notice in notices %}
+                <div class="p-4 rounded-lg bg-black/10 border border-portal-border/60 hover:border-slate-800 transition-all border-l-2 border-l-portal-primary">
+                    <div class="font-bold text-white text-sm">{{ notice.title }}</div>
+                    <div class="text-xs text-portal-textMuted mt-1 leading-relaxed">{{ notice.description }}</div>
+                    <div class="text-[10px] text-portal-textMuted mt-3 font-semibold">Posted by {{ notice.created_by.get_full_name|default:notice.created_by.username }} on {{ notice.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No notices available.</p>
+        {% endif %}
+    </div>
+
+{% elif active_tab == 'departments' %}
+    <!-- DEPARTMENTS TAB -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- List Departments -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg lg:col-span-2">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="list" class="text-portal-primary w-5 h-5"></i> Existing Departments
+            </h3>
+            {% if departments %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Code</th>
+                            <th class="pb-3 pr-4">Department Name</th>
+                            <th class="pb-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 text-sm">
+                        {% for dept in departments %}
+                        <tr class="hover:bg-white/5 transition-all">
+                            <td class="py-4 pr-4 font-mono font-bold text-portal-primary">{{ dept.code }}</td>
+                            <td class="py-4 pr-4 text-white font-semibold">{{ dept.name }}</td>
+                            <td class="py-4 text-right flex justify-end gap-2">
+                                <button class="edit-dept-btn border border-portal-border hover:border-portal-primary text-portal-textMuted hover:text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-all"
+                                        data-id="{{ dept.id }}" 
+                                        data-name="{{ dept.name }}" 
+                                        data-code="{{ dept.code }}">
+                                    Edit
+                                </button>
+                                <form method="post" action="{% url 'custom_admin_panel' %}?tab=departments" onsubmit="return confirm('Are you sure you want to delete this department?');" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_department">
+                                    <input type="hidden" name="id" value="{{ dept.id }}">
+                                    <button type="submit" class="border border-portal-border hover:border-portal-danger hover:bg-portal-danger/5 text-portal-textMuted hover:text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-all">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No departments defined yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Add Department Form -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg h-fit">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="plus-circle" class="text-portal-primary w-5 h-5"></i> Add New Department
+            </h3>
+            <form method="post" action="{% url 'custom_admin_panel' %}?tab=departments">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_department">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="dept-name" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Department Name</label>
+                        <input type="text" name="name" id="dept-name" required placeholder="e.g. Computer Science" class="form-control">
+                    </div>
+                    <div>
+                        <label for="dept-code" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Code</label>
+                        <input type="text" name="code" id="dept-code" required placeholder="e.g. CSE" class="form-control">
+                    </div>
+                    <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-2.5 rounded-lg transition-all active:scale-[0.99] mt-2">
+                        Create Department
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% elif active_tab == 'subjects' %}
+    <!-- SUBJECTS TAB -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- List Subjects -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg lg:col-span-2">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="list" class="text-portal-primary w-5 h-5"></i> Subject Records
+            </h3>
+            {% if subjects %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Code</th>
+                            <th class="pb-3 pr-4">Name</th>
+                            <th class="pb-3 pr-4">Dept / Sem</th>
+                            <th class="pb-3 pr-4">Assigned Instructor</th>
+                            <th class="pb-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for sub in subjects %}
+                        <tr class="hover:bg-white/5 transition-all text-slate-300">
+                            <td class="py-4 pr-4 font-mono font-bold text-portal-primary">{{ sub.code }}</td>
+                            <td class="py-4 pr-4 font-semibold text-white">{{ sub.name }}</td>
+                            <td class="py-4 pr-4 text-xs">{{ sub.department.code }} - Sem {{ sub.semester }}</td>
+                            <td class="py-4 pr-4 text-xs font-medium text-portal-secondary">
+                                {{ sub.teacher.user.get_full_name|default:sub.teacher.user.username|default:"Unassigned" }}
+                            </td>
+                            <td class="py-4 text-right flex justify-end gap-2">
+                                <button class="edit-sub-btn border border-portal-border hover:border-portal-primary text-portal-textMuted hover:text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-all"
+                                        data-id="{{ sub.id }}"
+                                        data-name="{{ sub.name }}"
+                                        data-code="{{ sub.code }}"
+                                        data-dept="{{ sub.department.id }}"
+                                        data-semester="{{ sub.semester }}"
+                                        data-teacher="{{ sub.teacher.id|default:'' }}">
+                                    Edit
+                                </button>
+                                <form method="post" action="{% url 'custom_admin_panel' %}?tab=subjects" onsubmit="return confirm('Are you sure you want to delete this subject?');" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_subject">
+                                    <input type="hidden" name="id" value="{{ sub.id }}">
+                                    <button type="submit" class="border border-portal-border hover:border-portal-danger hover:bg-portal-danger/5 text-portal-textMuted hover:text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-all">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No subjects defined yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Add Subject Form -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg h-fit">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="plus-circle" class="text-portal-primary w-5 h-5"></i> Add New Subject
+            </h3>
+            <form method="post" action="{% url 'custom_admin_panel' %}?tab=subjects">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_subject">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="sub-name" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Subject Name</label>
+                        <input type="text" name="name" id="sub-name" required placeholder="e.g. Database Systems" class="form-control">
+                    </div>
+                    <div>
+                        <label for="sub-code" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Subject Code</label>
+                        <input type="text" name="code" id="sub-code" required placeholder="e.g. CSE-303" class="form-control">
+                    </div>
+                    <div>
+                        <label for="sub-dept" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Department</label>
+                        <select name="department" id="sub-dept" required class="form-control">
+                            <option value="" disabled selected>-- Select Department --</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sub-sem" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Semester (1 - 8)</label>
+                        <input type="number" name="semester" id="sub-sem" required min="1" max="8" placeholder="e.g. 3" class="form-control">
+                    </div>
+                    <div>
+                        <label for="sub-teacher" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Instructor (Teacher)</label>
+                        <select name="teacher" id="sub-teacher" class="form-control">
+                            <option value="">-- Assign Instructor Later --</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}">{{ teacher.user.get_full_name|default:teacher.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-2.5 rounded-lg transition-all active:scale-[0.99] mt-2">
+                        Create Subject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% elif active_tab == 'timetable' %}
+    <!-- TIMETABLE TAB -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- List Timetable entries -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg lg:col-span-2">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="clock" class="text-portal-primary w-5 h-5"></i> Scheduled Classes
+            </h3>
+            {% if timetable %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Weekday</th>
+                            <th class="pb-3 pr-4">Subject</th>
+                            <th class="pb-3 pr-4">Time Window</th>
+                            <th class="pb-3 pr-4">Room No</th>
+                            <th class="pb-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for entry in timetable %}
+                        <tr class="hover:bg-white/5 transition-all text-slate-300">
+                            <td class="py-4 pr-4 font-bold text-white">{{ entry.day }}</td>
+                            <td class="py-4 pr-4">
+                                <span class="font-semibold text-slate-200">{{ entry.subject.name }}</span>
+                                <span class="text-xs text-portal-textMuted block font-mono">{{ entry.subject.code }}</span>
+                            </td>
+                            <td class="py-4 pr-4 text-xs font-mono">
+                                {{ entry.start_time|time:"g:i A" }} - {{ entry.end_time|time:"g:i A" }}
+                            </td>
+                            <td class="py-4 pr-4 font-semibold text-portal-primary text-xs">{{ entry.room_no }}</td>
+                            <td class="py-4 text-right">
+                                <form method="post" action="{% url 'custom_admin_panel' %}?tab=timetable" onsubmit="return confirm('Delete this scheduled class?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_timetable">
+                                    <input type="hidden" name="id" value="{{ entry.id }}">
+                                    <button type="submit" class="border border-portal-border hover:border-portal-danger hover:bg-portal-danger/5 text-portal-textMuted hover:text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-all">
+                                        Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No scheduled classes yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Add Timetable Entry Form -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg h-fit">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="plus-circle" class="text-portal-primary w-5 h-5"></i> Schedule Class Slot
+            </h3>
+            <form method="post" action="{% url 'custom_admin_panel' %}?tab=timetable">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_timetable">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="tt-subject" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Subject</label>
+                        <select name="subject" id="tt-subject" required class="form-control">
+                            <option value="" disabled selected>-- Select Subject --</option>
+                            {% for sub in subjects %}
+                            <option value="{{ sub.id }}">{{ sub.code }} - {{ sub.name }} (Sem {{ sub.semester }} - {{ sub.department.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tt-day" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Weekday</label>
+                        <select name="day" id="tt-day" required class="form-control">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tt-start" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Start Time</label>
+                        <input type="time" name="start_time" id="tt-start" required class="form-control">
+                    </div>
+                    <div>
+                        <label for="tt-end" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">End Time</label>
+                        <input type="time" name="end_time" id="tt-end" required class="form-control">
+                    </div>
+                    <div>
+                        <label for="tt-room" class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Lecture Room Number</label>
+                        <input type="text" name="room_no" id="tt-room" required placeholder="e.g. Room 402-A" class="form-control">
+                    </div>
+                    <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-2.5 rounded-lg transition-all active:scale-[0.99] mt-2">
+                        Schedule Slot
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% elif active_tab == 'users' %}
+    <!-- USERS TAB -->
+    <div class="space-y-8">
+        <!-- Teachers list -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="users" class="text-portal-primary w-5 h-5"></i> Faculty Members (Teachers)
+            </h3>
+            {% if teachers %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Employee ID</th>
+                            <th class="pb-3 pr-4">Name</th>
+                            <th class="pb-3 pr-4">Username</th>
+                            <th class="pb-3 pr-4">Email</th>
+                            <th class="pb-3 pr-4">Department / Designation</th>
+                            <th class="pb-3 text-right">Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for teacher in teachers %}
+                        <tr class="hover:bg-white/5 transition-all text-slate-300">
+                            <td class="py-4 pr-4 font-mono font-bold text-portal-primary">{{ teacher.employee_id }}</td>
+                            <td class="py-4 pr-4 font-semibold text-white">{{ teacher.user.get_full_name|default:teacher.user.username }}</td>
+                            <td class="py-4 pr-4 font-mono text-xs">{{ teacher.user.username }}</td>
+                            <td class="py-4 pr-4 text-xs">{{ teacher.user.email }}</td>
+                            <td class="py-4 pr-4">
+                                <span class="text-xs block font-bold text-white">{{ teacher.department.code }}</span>
+                                <span class="text-[11px] text-portal-textMuted block">{{ teacher.designation }}</span>
+                            </td>
+                            <td class="py-4 text-right text-xs font-medium font-mono">{{ teacher.phone }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No teachers setup in the system.</p>
+            {% endif %}
+        </div>
+
+        <!-- Students list -->
+        <div class="bg-portal-card border border-portal-border rounded-xl p-6 shadow-lg">
+            <h3 class="text-white font-bold mb-6 flex items-center gap-2 border-b border-portal-border/60 pb-4">
+                <i data-lucide="graduation-cap" class="text-portal-primary w-5 h-5"></i> Enrolled Students
+            </h3>
+            {% if students %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-portal-border text-[11px] font-bold text-portal-textMuted uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Roll Number</th>
+                            <th class="pb-3 pr-4">Name</th>
+                            <th class="pb-3 pr-4">Username</th>
+                            <th class="pb-3 pr-4">Email</th>
+                            <th class="pb-3 pr-4">Dept / Sem</th>
+                            <th class="pb-3 text-right">Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for student in students %}
+                        <tr class="hover:bg-white/5 transition-all text-slate-300">
+                            <td class="py-4 pr-4 font-mono font-bold text-portal-primary">{{ student.roll_no }}</td>
+                            <td class="py-4 pr-4 font-semibold text-white">{{ student.user.get_full_name|default:student.user.username }}</td>
+                            <td class="py-4 pr-4 font-mono text-xs">{{ student.user.username }}</td>
+                            <td class="py-4 pr-4 text-xs">{{ student.user.email }}</td>
+                            <td class="py-4 pr-4">
+                                <span class="text-xs block font-bold text-white">{{ student.department.code }}</span>
+                                <span class="text-[11px] text-portal-textMuted block">Semester {{ student.semester }}</span>
+                            </td>
+                            <td class="py-4 text-right text-xs font-medium font-mono">{{ student.phone }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-portal-textMuted text-sm text-center py-8">No students setup in the system.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- EDIT DEPARTMENT MODAL -->
+<div id="edit-dept-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 w-full max-w-[420px] shadow-2xl relative">
+        <button onclick="closeModal('edit-dept-modal')" class="absolute top-4 right-4 text-portal-textMuted hover:text-white font-bold text-xl">&times;</button>
+        <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+            <i data-lucide="edit-3" class="text-portal-primary w-5 h-5"></i> Edit Department
+        </h3>
+        <form method="post" action="{% url 'custom_admin_panel' %}?tab=departments">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit_department">
+            <input type="hidden" name="id" id="edit-dept-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Department Name</label>
+                    <input type="text" name="name" id="edit-dept-name" required class="form-control">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Code</label>
+                    <input type="text" name="code" id="edit-dept-code" required class="form-control">
+                </div>
+                <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-2.5 rounded-lg transition-all active:scale-[0.99] mt-2">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT SUBJECT MODAL -->
+<div id="edit-sub-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-portal-card border border-portal-border rounded-xl p-6 w-full max-w-[420px] shadow-2xl relative">
+        <button onclick="closeModal('edit-sub-modal')" class="absolute top-4 right-4 text-portal-textMuted hover:text-white font-bold text-xl">&times;</button>
+        <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+            <i data-lucide="edit-3" class="text-portal-primary w-5 h-5"></i> Edit Subject
+        </h3>
+        <form method="post" action="{% url 'custom_admin_panel' %}?tab=subjects">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit_subject">
+            <input type="hidden" name="id" id="edit-sub-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Subject Name</label>
+                    <input type="text" name="name" id="edit-sub-name" required class="form-control">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Code</label>
+                    <input type="text" name="code" id="edit-sub-code" required class="form-control">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Department</label>
+                    <select name="department" id="edit-sub-dept" required class="form-control">
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Semester</label>
+                    <input type="number" name="semester" id="edit-sub-sem" required min="1" max="8" class="form-control">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-portal-textMuted uppercase tracking-wider mb-2">Teacher</label>
+                    <select name="teacher" id="edit-sub-teacher" class="form-control">
+                        <option value="">-- No Teacher Assigned --</option>
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}">{{ teacher.user.get_full_name|default:teacher.user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-portal-primary hover:bg-portal-primaryHover text-slate-950 font-bold text-sm py-2.5 rounded-lg transition-all active:scale-[0.99] mt-2">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.edit-dept-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const code = btn.getAttribute('data-code');
+        
+        document.getElementById('edit-dept-id').value = id;
+        document.getElementById('edit-dept-name').value = name;
+        document.getElementById('edit-dept-code').value = code;
+        document.getElementById('edit-dept-modal').classList.remove('hidden');
+    });
+});
+
+document.querySelectorAll('.edit-sub-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const code = btn.getAttribute('data-code');
+        const deptId = btn.getAttribute('data-dept');
+        const semester = btn.getAttribute('data-semester');
+        const teacherId = btn.getAttribute('data-teacher');
+        
+        document.getElementById('edit-sub-id').value = id;
+        document.getElementById('edit-sub-name').value = name;
+        document.getElementById('edit-sub-code').value = code;
+        document.getElementById('edit-sub-dept').value = deptId;
+        document.getElementById('edit-sub-sem').value = semester;
+        document.getElementById('edit-sub-teacher').value = teacherId || "";
+        document.getElementById('edit-sub-modal').classList.remove('hidden');
+    });
+});
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+}
+</script>
+{% endblock %}

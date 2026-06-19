@@ -311,6 +311,12 @@
             <i data-lucide="book-open" class="w-7 h-7 text-portal-secondary group-hover:scale-110 transition-all"></i>
             <span class="text-xs font-bold text-white">Notes Library</span>
         </a>
+        {% if user.is_admin %}
+        <a href="{% url 'custom_admin_panel' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
+            <i data-lucide="settings" class="w-7 h-7 text-portal-primary group-hover:scale-110 transition-all"></i>
+            <span class="text-xs font-bold text-white">Admin Panel</span>
+        </a>
+        {% endif %}
         {% if user.is_student %}
         <a href="{% url 'timetable_view' %}" class="flex flex-col gap-2 justify-center items-center text-center p-5 rounded-xl border border-portal-border hover:border-portal-primary/40 hover:bg-white/5 transition-all group">
             <i data-lucide="calendar" class="w-7 h-7 text-portal-success group-hover:scale-110 transition-all"></i>

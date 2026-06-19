@@ -11,11 +11,11 @@ class User(AbstractUser):
     
     @property
     def is_student(self):
-        return self.role == 'student'
+        return self.role == 'student' and not self.is_superuser
         
     @property
     def is_teacher(self):
-        return self.role == 'teacher'
+        return self.role == 'teacher' and not self.is_superuser
         
     @property
     def is_admin(self):
@@ -30,6 +30,11 @@ class User(AbstractUser):
         if self.role == 'teacher':
             return hasattr(self, 'teacher_profile')
         return False
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = 'admin'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

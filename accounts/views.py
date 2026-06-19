@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -238,4 +239,164 @@ def services_view(request):
 
 def contact_view(request):
     return render(request, 'contact.html')
+
+@login_required
+def custom_admin_panel(request):
+    user = request.user
+    if not user.is_admin:
+        messages.error(request, "Access denied. Only administrators can access the admin panel.")
+        return redirect('dashboard')
+        
+    active_tab = request.GET.get('tab', 'overview')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_department':
+            name = request.POST.get('name', '').strip()
+            code = request.POST.get('code', '').strip().upper()
+            if name and code:
+                if Department.objects.filter(code=code).exists():
+                    messages.error(request, f"Department code '{code}' already exists.")
+                else:
+                    Department.objects.create(name=name, code=code)
+                    messages.success(request, f"Department '{name}' created successfully!")
+            else:
+                messages.error(request, "All fields are required.")
+                
+        elif action == 'edit_department':
+            dept_id = request.POST.get('id')
+            name = request.POST.get('name', '').strip()
+            code = request.POST.get('code', '').strip().upper()
+            dept = get_object_or_404(Department, id=dept_id)
+            if name and code:
+                if Department.objects.filter(code=code).exclude(id=dept_id).exists():
+                    messages.error(request, f"Department code '{code}' already exists.")
+                else:
+                    dept.name = name
+                    dept.code = code
+                    dept.save()
+                    messages.success(request, "Department updated successfully!")
+            else:
+                messages.error(request, "All fields are required.")
+                
+        elif action == 'delete_department':
+            dept_id = request.POST.get('id')
+            dept = get_object_or_404(Department, id=dept_id)
+            try:
+                dept.delete()
+                messages.success(request, "Department deleted successfully.")
+            except Exception as e:
+                messages.error(request, "Could not delete department. It may have associated students or teachers.")
+                
+        elif action == 'add_subject':
+            name = request.POST.get('name', '').strip()
+            code = request.POST.get('code', '').strip().upper()
+            dept_id = request.POST.get('department')
+            semester = request.POST.get('semester')
+            teacher_id = request.POST.get('teacher')
+            
+            if name and code and dept_id and semester:
+                dept = get_object_or_404(Department, id=dept_id)
+                teacher = None
+                if teacher_id:
+                    teacher = get_object_or_404(Teacher, id=teacher_id)
+                if Subject.objects.filter(code=code).exists():
+                    messages.error(request, f"Subject code '{code}' already exists.")
+                else:
+                    Subject.objects.create(
+                        name=name, code=code, department=dept, 
+                        semester=int(semester), teacher=teacher
+                    )
+                    messages.success(request, f"Subject '{name}' created successfully!")
+            else:
+                messages.error(request, "All required fields must be filled.")
+                
+        elif action == 'edit_subject':
+            sub_id = request.POST.get('id')
+            name = request.POST.get('name', '').strip()
+            code = request.POST.get('code', '').strip().upper()
+            dept_id = request.POST.get('department')
+            semester = request.POST.get('semester')
+            teacher_id = request.POST.get('teacher')
+            
+            sub = get_object_or_404(Subject, id=sub_id)
+            if name and code and dept_id and semester:
+                dept = get_object_or_404(Department, id=dept_id)
+                teacher = None
+                if teacher_id:
+                    teacher = get_object_or_404(Teacher, id=teacher_id)
+                if Subject.objects.filter(code=code).exclude(id=sub_id).exists():
+                    messages.error(request, f"Subject code '{code}' already exists.")
+                else:
+                    sub.name = name
+                    sub.code = code
+                    sub.department = dept
+                    sub.semester = int(semester)
+                    sub.teacher = teacher
+                    sub.save()
+                    messages.success(request, "Subject updated successfully!")
+            else:
+                messages.error(request, "All required fields must be filled.")
+                
+        elif action == 'delete_subject':
+            sub_id = request.POST.get('id')
+            sub = get_object_or_404(Subject, id=sub_id)
+            sub.delete()
+            messages.success(request, "Subject deleted successfully.")
+            
+        elif action == 'add_timetable':
+            sub_id = request.POST.get('subject')
+            day = request.POST.get('day')
+            start_time = request.POST.get('start_time')
+            end_time = request.POST.get('end_time')
+            room_no = request.POST.get('room_no', '').strip()
+            
+            if sub_id and day and start_time and end_time and room_no:
+                subject = get_object_or_404(Subject, id=sub_id)
+                Timetable.objects.create(
+                    subject=subject, day=day, start_time=start_time, 
+                    end_time=end_time, room_no=room_no
+                )
+                messages.success(request, "Timetable entry added successfully!")
+            else:
+                messages.error(request, "All fields are required.")
+                
+        elif action == 'delete_timetable':
+            entry_id = request.POST.get('id')
+            entry = get_object_or_404(Timetable, id=entry_id)
+            entry.delete()
+            messages.success(request, "Timetable slot deleted successfully.")
+            
+        return redirect(f"{reverse('custom_admin_panel')}?tab={active_tab}")
+        
+    # GET Request: Prepare Context based on tab
+    context = {
+        'active_tab': active_tab,
+    }
+    
+    if active_tab == 'overview':
+        context['total_students'] = Student.objects.count()
+        context['total_teachers'] = Teacher.objects.count()
+        context['total_departments'] = Department.objects.count()
+        context['total_subjects'] = Subject.objects.count()
+        context['notices'] = Notice.objects.all().order_by('-created_at')[:5]
+        
+    elif active_tab == 'departments':
+        context['departments'] = Department.objects.all().order_by('code')
+        
+    elif active_tab == 'subjects':
+        context['subjects'] = Subject.objects.all().order_by('department__code', 'semester', 'code')
+        context['departments'] = Department.objects.all().order_by('code')
+        context['teachers'] = Teacher.objects.all().order_by('user__first_name', 'user__username')
+        
+    elif active_tab == 'timetable':
+        context['timetable'] = Timetable.objects.all().order_by('day', 'start_time')
+        context['subjects'] = Subject.objects.all().order_by('code')
+        
+    elif active_tab == 'users':
+        context['students'] = Student.objects.all().order_by('department__code', 'semester', 'roll_no')
+        context['teachers'] = Teacher.objects.all().order_by('department__code', 'user__username')
+        
+    return render(request, 'accounts/admin_panel.html', context)
 

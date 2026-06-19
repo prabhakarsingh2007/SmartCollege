@@ -7,7 +7,7 @@
     <p class="text-portal-textMuted text-sm mt-1">View and manage your academic profile details</p>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="grid grid-cols-1 {% if form %}lg:grid-cols-2{% endif %} gap-8">
     <!-- Profile Card (Overview) -->
     <div class="bg-portal-card border border-portal-border rounded-xl p-8 flex flex-col items-center text-center gap-6 shadow-2xl">
         {% if user.is_student and profile.profile_image %}
@@ -61,14 +61,17 @@
                 <span class="text-white font-medium">{{ profile.designation }}</span>
             </div>
             {% endif %}
+            {% if profile.phone %}
             <div class="flex justify-between pb-2">
                 <span class="text-portal-textMuted">Phone Number:</span>
                 <span class="text-white font-medium">{{ profile.phone }}</span>
             </div>
+            {% endif %}
         </div>
     </div>
     
     <!-- Edit Profile Card -->
+    {% if form %}
     <div class="bg-portal-card border border-portal-border rounded-xl p-8 shadow-2xl">
         <h3 class="text-white text-lg font-bold mb-6">Edit Profile Details</h3>
         
@@ -90,5 +93,6 @@
             </button>
         </form>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

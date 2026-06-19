@@ -182,7 +182,8 @@
 
                     {% if user.is_admin %}
                     <li>
-                        <a href="/admin/" target="_blank" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold text-portal-textMuted hover:text-white hover:bg-white/5 transition-all">
+                        <a href="{% url 'custom_admin_panel' %}" class="flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all
+                            {% if 'admin-panel' in request.path %} bg-portal-primary/10 text-portal-primary {% else %} text-portal-textMuted hover:text-white hover:bg-white/5 {% endif %}">
                             <i data-lucide="settings" class="w-4 h-4"></i>
                             <span class="hidden md:inline">Admin Panel</span>
                         </a>
